@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <regex.h>
 
 void next_move(char board[8][8][4], char* move, size_t buff_size);
 void current_board(const char board[8][8][4], const char* next_move);
+int check_move(char* move);
 int main(int argc, char* argv[argc+1]) {
 
 //4 bytes to include both the unicode character (3bytes) and the null pointer (1byte), otherwise it will keep on printing characters from the rest of the adjacent strings
@@ -49,7 +52,28 @@ void current_board(const char board[8][8][4], const char* next_move){
 
 void next_move(char board[8][8][4], char* move, size_t buff_size){
 
+	char * move_1;
+	char * move_2;
+	char delim[]=" ";
+
 	getline(&move,&buff_size,stdin);
 	
+	move_1=strtok(move,delim);
+	move_2=strtok(NULL,delim);
+
+	printf("%s%s\n",move_1,move_2);
+	if(!check_move(move_1) && !check_move(move_2))
+		printf("valid move !\n");
 //chess piece movement	
+}
+
+int check_move(char* move){
+	
+	int rc;
+	regex_t regex;
+
+	rc=regcomp(&regex, "[RNBKQP][a-h][1-8]",0);
+//	rc=regcomp(&regex, "[RNBKQ]?[a-h][1-8]",0);
+		
+	return regexec(&regex,move,0,NULL,0);
 }
