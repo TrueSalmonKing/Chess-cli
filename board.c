@@ -67,13 +67,17 @@ void next_move(char board[8][8][4], char* move, size_t buff_size){
 //chess piece movement	
 }
 
-int check_move(char* move){
+int check_move(char* curr_place, char* move){
 	
 	int rc;
 	regex_t regex;
 
 	rc=regcomp(&regex, "[RNBKQP][a-h][1-8]",0);
 //	rc=regcomp(&regex, "[RNBKQ]?[a-h][1-8]",0);
-		
-	return regexec(&regex,move,0,NULL,0);
+	rc = regexec(&regex,move,0,NULL,0);
+
+	switch (move[0]) {
+		case 'N':
+			if( ((move[1]-'a')<8)&&(move[2]<8) && !( ((  ) )
+	}
 }
