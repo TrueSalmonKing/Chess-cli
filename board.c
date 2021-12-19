@@ -1,3 +1,25 @@
+//To do:
+//Movement parsing exception handling --> NO SPACE BETWEEN CHARACTERS
+//Rook movement
+//Bishop movement
+//Queen movement
+//King movement
+//Pawn movement
+//Pawn to Queen conversion
+//Ally-Foe Recognition when collision occurs
+//Co-op playstyle implementation
+//Timer + Turns
+//AI Implementation
+//Handle Exceptions --> INVALID MOVE + TIMER RAN OUT + REGEX ERRORS
+//
+//
+//Completed:
+//Movement parsing
+//Knight movement
+
+
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
