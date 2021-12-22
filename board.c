@@ -1,5 +1,5 @@
 //To do:
-//Movement parsing exception handling --> NO SPACE BETWEEN CHARACTERS
+///Movement parsing exception handling --> NO SPACE BETWEEN CHARACTERS
 //Rook movement
 //Bishop movement
 //Queen movement
@@ -25,6 +25,7 @@
 #include <string.h>
 #include <regex.h>
 
+int rook_lane_check(char board[8][8][4], int A, int Ax, int Ay);
 void next_move(char board[8][8][4], char* move, size_t buff_size);
 void current_board(char board[8][8][4], const char* next_move);
 int check_move(char board[8][8][4], char* curr_place, char* move);
@@ -114,7 +115,29 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 				strcpy(board[cpx][cpy]," ");
 				return 0;
 			};
+		case 'R':
+			if(!strcmp(board[cpx][cpy],"\u265c") && !(((my)>>3)&&((mx)>>3)) && (!b && rook_lane_check(board,a,cpy,my))^(!a && rook_lane_check(board,b,cpx,mx))){
+//				printf("mx=%d my=%d cpx=%d cpy%d",mx,my,cpx,cpy);
+				strcpy(board[mx][my],board[cpx][cpy]);
+				strcpy(board[cpx][cpy]," ");
+				return 0;
+			};
 		default:
 			return rc;
 	}
+}
+
+int rook_lane_check(char board[8][8][4], int A, int Ax, int Ay){
+
+	if(A&0x0001)
+		return 1;
+//	if(A&0x8000000){
+//		A=-(A+1);
+//		while(!(A-1)){
+//			Ay+A
+//		}
+//	}
+
+	return 1;
+
 }
