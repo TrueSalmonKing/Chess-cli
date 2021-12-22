@@ -1,7 +1,13 @@
 #include <stdio.h>
 
 void binary_print(int a);
+int check_Knight_Move();
+
 int main(int argc, char* argv[argc+1]) {
+
+}
+
+int check_Knight_Move(){
 
 	char test[3] = "Nh8";
 	char test2[3] = "Na7";
