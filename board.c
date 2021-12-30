@@ -84,7 +84,7 @@ void next_move(char board[8][8][4], char* move, size_t buff_size){
 	move_2=strtok(NULL,delim);
 
 	printf("%s%s\n",move_1,move_2);
-	if(check_move(board, move_1, move_2)) {
+	if(!check_move(board, move_1, move_2)) {
 		printf("valid move !\n");
 		
 	}
