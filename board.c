@@ -48,7 +48,7 @@ int main(int argc, char* argv[argc+1]) {
 
 	while(1){
 		current_board(board, current_move);
-		printf("\nprevious move: %c%c%c%c%c%c%c \nnext move: ",*current_move,*(current_move+1),*(current_move+2),*(current_move+3),*(current_move+4),*(current_move+5),*(current_move+6));
+		printf("\nprevious move: %c%c%c %c %c%c%c \nnext move: ",*current_move,*(current_move+1),*(current_move+2),*(current_move+3),*(current_move+4),*(current_move+5),*(current_move+6));
 		next_move(board,current_move, buff_size);
 	}
 	return 0;
@@ -68,14 +68,12 @@ void current_board(char board[8][8][4], const char* next_move){
 			
 
 
-//	printf(" _a_b_c_d_e_f_g_h\n8|\u265c|\u265e|\u265d|\u265b|\u265a|\u265d|\u265e|\u265c|8\n7|\u265f|\u265f|\u265f|\u265f|\u265f|\u265f|\u265f|\u265f|7\n6| | | | | | | | |6\n5| | | | | | | | |5\n4| | | | | | | | |4\n3| | | | | | | | |3\n2|\u2659|\u2659|\u2659|\u2659|\u2659|\u2659|\u2659|\u2659|2\n1|\u2656|\u2658|\u2657|\u2655|\u2654|\u2658|\u2657|\u2656|1\n -a-b-c-d-e-f-g-h-\n");
-
 }
 
 void next_move(char board[8][8][4], char* move, size_t buff_size){
 
-	char * move_1;
-	char * move_2;
+	char * move_1 = malloc(sizeof *move_1 * 3);
+	char * move_2 = malloc(sizeof *move_2 * 3);
 	char delim[]=" ";
 
 	getline(&move,&buff_size,stdin);
@@ -83,10 +81,13 @@ void next_move(char board[8][8][4], char* move, size_t buff_size){
 	move_1=strtok(move,delim);
 	move_2=strtok(NULL,delim);
 
-	printf("%s%s\n",move_1,move_2);
-	if(!check_move(board, move_1, move_2)) {
-		printf("valid move !\n");
-		
+	if(move_2 == NULL){
+		printf("Invalid move !\n");
+		return;
+	}
+
+	if(!check_move(board, move_1, move_2)){
+		printf("Valid move !\n");
 	}
 }
 
@@ -103,13 +104,13 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 
 	rc=regcomp(&regex, "[RNBKQP][a-h][1-8]",0);
 
-// !!!!!!!!!!!!!!! MUST CHECK WHY REGEX DOESN'T ACCEPT ?
+// !!!!!!!!!!!!!!! MUST CHECK WHY REGEX DOESN'T ACCEPT "?"
 //	rc=regcomp(&regex, "[RNBKQ]?[a-h][1-8]",0);
 	rc=regexec(&regex,move,0,NULL,0);
 
-	switch (move[0]) {
+	switch (move[0]){
 		case 'N':
-			if(!strcmp(board[cpx][cpy],"\u265e") && !(((my)>>3)&&((mx)>>3)) && (((b&2)&&(a&1))^((b&1)&&(a&2)))) {
+			if(!strcmp(board[cpx][cpy],"\u265e") && !(((my)>>3)&&((mx)>>3)) && (((b&2)&&(a&1))^((b&1)&&(a&2)))){
 //				printf("mx=%d my=%d cpx=%d cpy%d",mx,my,cpx,cpy);
 				strcpy(board[mx][my],board[cpx][cpy]);
 				strcpy(board[cpx][cpy]," ");
@@ -123,6 +124,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 				return 0;
 			};
 		default:
+			printf("Invalid move !\n");
 			return rc;
 	}
 }
