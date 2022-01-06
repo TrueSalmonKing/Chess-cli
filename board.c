@@ -1,6 +1,5 @@
 //To do:
-///Movement parsing exception handling --> NO SPACE BETWEEN CHARACTERS
-//Rook movement
+//Rook movement --> Movement obstruction check
 //Bishop movement
 //Queen movement
 //King movement
@@ -16,6 +15,7 @@
 //Completed:
 //Movement parsing
 //Knight movement
+//Movement parsing exception handling --> NO SPACE BETWEEN CHARACTERS
 
 
 
