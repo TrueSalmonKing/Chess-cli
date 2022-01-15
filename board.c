@@ -110,14 +110,16 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 
 	switch (move[0]){
 		case 'N':
-			if(!strcmp(board[cpx][cpy],"\u265e") && !(((my)>>3)&&((mx)>>3)) && (((b&2)&&(a&1))^((b&1)&&(a&2)))){
+			printf("%d", (my>>3));
+			printf("%d\n", (mx>>3));
+			if(!strcmp(board[cpx][cpy],"\u265e") && (!((my)>>3)&&!((mx)>>3)) && (((b&2)&&(a&1))^((b&1)&&(a&2)))){
 //				printf("mx=%d my=%d cpx=%d cpy%d",mx,my,cpx,cpy);
 				strcpy(board[mx][my],board[cpx][cpy]);
 				strcpy(board[cpx][cpy]," ");
 				return 0;
 			};
 		case 'R':
-			if(!strcmp(board[cpx][cpy],"\u265c") && !(((my)>>3)&&((mx)>>3)) && (!b && rook_lane_check(board,a,cpy,my))^(!a && rook_lane_check(board,b,cpx,mx))){
+			if(!strcmp(board[cpx][cpy],"\u265c") && (!((my)>>3)&&!((mx)>>3)) && (!b && rook_lane_check(board,a,cpy,my))^(!a && rook_lane_check(board,b,cpx,mx))){
 //				printf("mx=%d my=%d cpx=%d cpy%d",mx,my,cpx,cpy);
 				strcpy(board[mx][my],board[cpx][cpy]);
 				strcpy(board[cpx][cpy]," ");
