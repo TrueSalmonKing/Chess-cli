@@ -1,5 +1,4 @@
 //To do:
-//Rook movement --> Movement obstruction check
 //Bishop movement
 //Queen movement
 //King movement
@@ -16,6 +15,7 @@
 //Movement parsing
 //Knight movement
 //Movement parsing exception handling --> NO SPACE BETWEEN CHARACTERS
+//Rook movement --> Movement obstruction check
 
 
 
@@ -25,11 +25,11 @@
 #include <string.h>
 #include <regex.h>
 
-int rook_lane_check(char board[8][8][4], int A, int Ax, int Ay);
+int rook_lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X);
 void next_move(char board[8][8][4], char* move, size_t buff_size);
 void current_board(char board[8][8][4], const char* next_move);
 int check_move(char board[8][8][4], char* curr_place, char* move);
-int main(int argc, char* argv[argc+1]) {
+int main(int argc, char* argv[argc+1]){
 
 //4 bytes to include both the unicode character (3bytes) and the null pointer (1byte), otherwise it will keep on printing characters from the rest of the adjacent strings
 	char board[8][8][4]={
@@ -40,7 +40,7 @@ int main(int argc, char* argv[argc+1]) {
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{"\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659"}
-			,{"\u2656","\u2658","\u2657","\u2655","\u2654","\u2658","\u2657","\u2656"}
+			,{"\u2656","\u2658","\u2657","\u2655","\u2654","\u2657","\u2658","\u2656"}
 			};
 
 	size_t buff_size=7;
@@ -86,19 +86,18 @@ void next_move(char board[8][8][4], char* move, size_t buff_size){
 		return;
 	}
 
-	if(!check_move(board, move_1, move_2)){
+	if(check_move(board, move_1, move_2))
 		printf("Valid move !\n");
-	}
 }
 
 int check_move(char board[8][8][4], char* curr_place, char* move){
-	int cpx=curr_place[2]-'1';
-	int cpy=curr_place[1]-'a';
-	int mx=move[2]-'1';
-	int my=move[1]-'a';
+	int cpx=curr_place[1]-'a';
+	int cpy=curr_place[2]-'1';
+	int mx=move[1]-'a';
+	int my=move[2]-'1';
 
-	int a=my-cpy;
-	int b=mx-cpx;
+	int a=mx-cpx;
+	int b=my-cpy;
 	int rc;
 	regex_t regex;
 
@@ -110,34 +109,94 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 
 	switch (move[0]){
 		case 'N':
-			if(!strcmp(board[cpx][cpy],"\u265e") && (!((my)>>3)&&!((mx)>>3)) && (((b&2)&&(a&1))^((b&1)&&(a&2)))){
-				strcpy(board[mx][my],board[cpx][cpy]);
-				strcpy(board[cpx][cpy]," ");
-				return 0;
+			if((!strcmp(board[cpy][cpx],"\u265e") || !strcmp(board[cpy][cpx],"\u2658")) && (!((mx)>>3)&&!((my)>>3)) && (((a&2)&&(b&1))^((a&1)&&(b&2)))){
+				strcpy(board[my][mx],board[cpy][cpx]);
+				strcpy(board[cpy][cpx]," ");
+				return 1;
 			};
+			return 0;
 		case 'R':
-			if(!strcmp(board[cpx][cpy],"\u265c") && (!((my)>>3)&&!((mx)>>3)) && (!b && rook_lane_check(board,a,cpy,my))^(!a && rook_lane_check(board,b,cpx,mx))){
-				strcpy(board[mx][my],board[cpx][cpy]);
-				strcpy(board[cpx][cpy]," ");
-				return 0;
+			if((!strcmp(board[cpy][cpx],"\u265c") || !strcmp(board[cpy][cpx],"\u2656")) && (!((mx)>>3)&&!((my)>>3)) && (!a && rook_lane_check(board,cpx,cpy,b,0))^(!b && rook_lane_check(board,cpx,cpy,a,1))){
+				strcpy(board[my][mx],board[cpy][cpx]);
+				strcpy(board[cpy][cpx]," ");
+				return 1;
 			};
+			return 0;
 		default:
-			printf("Invalid move !\n");
+			printf("Invalid !\n");
 			return rc;
 	}
 }
 
-int rook_lane_check(char board[8][8][4], int A, int Ax, int Ay){
+int rook_lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X){
 
-	if(A&0x0001)
-		return 1;
-//	if(A&0x8000000){
-//		A=-(A+1);
-//		while(!(A-1)){
-//			Ay+A
-//		}
-//	}
+	int iter = ((!!mX) | (mX >> 31)) ? 1 : -1;
+	printf("mX= %d, iter= %d\n", mX, iter);
+	switch(X){
+		case 0:
+			if(mX&0x80000000){
+				printf("NEGATIVE\n");
+				while(mX){
+					printf("mX= %d\n", mX);
+					printf("cpy=%d, cpx=%d, %s\n", cpy+mX, cpx, board[cpy+mX][cpx]);
+					if(!strcmp(board[cpy+mX][cpx]," "))
+						printf("empty\n");
+					else {
+						printf("Collision !\n");
+//						colli_handl();
+						return 0;
+					}
+					mX += iter;
+				}
+				return 1;
+			} else {
+				while(mX){
+					printf("%d\n", mX);
+					printf("cpy=%d, cpx=%d, \"%s\"\n", cpy+mX, cpx, board[cpy+mX][cpx]);
+					if(!strcmp(board[cpy+mX][cpx]," "))
+						printf("empty");
+					else {
+						printf("Collision !\n");
+//						colli_handl();
+						return 0;
+					}
+					mX -= iter;
+				}
+				return 1;
+			};
+		case 1:
+			if(mX&0x80000000){
+				printf("NEGATIVE");
+				while(mX){
+					printf("%d\n", mX);
+					printf("cpy=%d, cpx=%d, %s\n", cpy, cpx+mX, board[cpy][cpx+mX]);
+					if(!strcmp(board[cpy][cpx+mX]," "))
+						printf("empty");
+					else {
+						printf("Collision !\n");
+//						colli_handl();
+						return 0;
+					}
+					mX += iter;
+				}
+				return 1;
+			} else {
+				while(mX){
+					printf("%d\n", mX);
+					printf("cpy=%d, cpx=%d, \"%s\"\n", cpy, cpx+mX, board[cpy][cpx+mX]);
+					if(!strcmp(board[cpy][cpx+mX]," "))
+						printf("empty");
+					else {
+						printf("Collision !\n");
+//						colli_handl();
+						return 0;
+					}
+					mX += iter;
+				}
+				return 1;
+			};
+	}
 
-	return 1;
+	return 0;
 
 }
