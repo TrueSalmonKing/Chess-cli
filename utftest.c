@@ -7,7 +7,7 @@ int main(int argc, char* argv[argc+1]){
 	*a = 0xE2;
 	*(a+1) = 0x99;
 	*(a+2) = 0x9F;
-	printf("%s", a);
+	printf("%x", a[2]&0xff);
 	return 0;
 
 }
