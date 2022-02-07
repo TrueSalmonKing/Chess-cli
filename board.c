@@ -1,10 +1,10 @@
 //To do:
+//Rook movement --> Movement obstruction check
 //Bishop movement
 //Queen movement
 //King movement
 //Pawn movement
 //Pawn to Queen conversion
-//Ally-Foe Recognition when collision occurs
 //Co-op playstyle implementation
 //Timer + Turns
 //AI Implementation
@@ -15,7 +15,7 @@
 //Movement parsing
 //Knight movement
 //Movement parsing exception handling --> NO SPACE BETWEEN CHARACTERS
-//Rook movement --> Movement obstruction check
+//Ally-Foe Recognition when collision occurs
 
 
 
@@ -29,6 +29,8 @@ int rook_lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X);
 void next_move(char board[8][8][4], char* move, size_t buff_size);
 void current_board(char board[8][8][4], const char* next_move);
 int check_move(char board[8][8][4], char* curr_place, char* move);
+int colli_handl(char p1[4], char p2[4]);
+
 int main(int argc, char* argv[argc+1]){
 
 //4 bytes to include both the unicode character (3bytes) and the null pointer (1byte), otherwise it will keep on printing characters from the rest of the adjacent strings
@@ -36,7 +38,7 @@ int main(int argc, char* argv[argc+1]){
 			{"\u265c","\u265e","\u265d","\u265b","\u265a","\u265d","\u265e","\u265c"}
 			,{"\u265f","\u265f","\u265f","\u265f","\u265f","\u265f","\u265f","\u265f"}
 			,{" "," "," "," "," "," "," "," "}
-			,{" "," "," "," "," "," "," "," "}
+			,{" ","\u265c"," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{"\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659"}
@@ -143,8 +145,7 @@ int rook_lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X){
 						printf("empty\n");
 					else {
 						printf("Collision !\n");
-//						colli_handl();
-						return 0;
+						return colli_handl(board[cpy][cpx], board[cpy+mX][cpx]);
 					}
 					mX += iter;
 				}
@@ -157,8 +158,7 @@ int rook_lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X){
 						printf("empty");
 					else {
 						printf("Collision !\n");
-//						colli_handl();
-						return 0;
+						return colli_handl(board[cpy][cpx], board[cpy+mX][cpx]);
 					}
 					mX -= iter;
 				}
@@ -174,8 +174,7 @@ int rook_lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X){
 						printf("empty");
 					else {
 						printf("Collision !\n");
-//						colli_handl();
-						return 0;
+						return colli_handl(board[cpy][cpx], board[cpy][cpx+mX]);
 					}
 					mX += iter;
 				}
@@ -188,8 +187,7 @@ int rook_lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X){
 						printf("empty");
 					else {
 						printf("Collision !\n");
-//						colli_handl();
-						return 0;
+						return colli_handl(board[cpy][cpx], board[cpy][cpx+mX]);
 					}
 					mX += iter;
 				}
@@ -198,5 +196,14 @@ int rook_lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X){
 	}
 
 	return 0;
+
+}
+
+int colli_handl(char p1[4], char p2[4]){
+
+//colli_handl only gets called if the board piece ISN'T a space
+//first we compare if its third hex value is larger than 0x93 (smallest chess piece is E2 99 94) and we divide by 6, as the smallest black chess piece has value E2 99 9A (9A - 94 = 6), to check whether it is a black of white piece, we proceed to get the bit value of its range (0 if white, 1 if black) and we XNOR it to the value get from the same operation done on the second piece
+//if differing pieces' collision occurs --> 1 is returned
+	return ((p1[2]-0x94)&0xFF)/6 == !(((p2[2]-0x94)&0xFF)/6);
 
 }
