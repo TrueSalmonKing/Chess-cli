@@ -148,7 +148,7 @@ int rook_lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X){
 						printf("empty\n");
 					else {
 						printf("Collision !\n");
-						return colli_handl(board[cpy][cpx], board[cpy+i][cpx]);
+						return mX-i ? 0 : colli_handl(board[cpy][cpx], board[cpy+i][cpx]);
 					}
 					--i;
 				} while(mX-i);
@@ -162,7 +162,7 @@ int rook_lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X){
 						printf("empty");
 					else {
 						printf("Collision !\n");
-						return colli_handl(board[cpy][cpx], board[cpy+i][cpx]);
+						return mX-i ? 0 : colli_handl(board[cpy][cpx], board[cpy+i][cpx]);
 					}
 					++i;
 				} while (mX-i);
@@ -179,7 +179,7 @@ int rook_lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X){
 						printf("empty");
 					else {
 						printf("Collision !\n");
-						return colli_handl(board[cpy][cpx], board[cpy][cpx+i]);
+						return mX-i ? 0 : colli_handl(board[cpy][cpx], board[cpy][cpx+i]);
 					}
 					--i;
 				} while(mX-i);
@@ -193,7 +193,7 @@ int rook_lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X){
 						printf("empty");
 					else {
 						printf("Collision !\n");
-						return colli_handl(board[cpy][cpx], board[cpy][cpx+i]);
+						return mX-i ? 0 : colli_handl(board[cpy][cpx], board[cpy][cpx+i]);
 					}
 					++i;
 				} while(mX-i);
