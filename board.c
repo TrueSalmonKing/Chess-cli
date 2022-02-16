@@ -26,7 +26,7 @@
 #include <string.h>
 #include <regex.h>
 
-int rook_lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X);
+int lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X);
 void next_move(char board[8][8][4], char* move, size_t buff_size);
 void current_board(char board[8][8][4], const char* next_move);
 int check_move(char board[8][8][4], char* curr_place, char* move);
@@ -119,19 +119,23 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 			};
 			return 0;
 		case 'R':
-			if((!strcmp(board[cpy][cpx],"\u265c") || !strcmp(board[cpy][cpx],"\u2656")) && (!((mx)>>3)&&!((my)>>3)) && (!a && rook_lane_check(board,cpx,cpy,b,0))^(!b && rook_lane_check(board,cpx,cpy,a,1))){
+			if((!strcmp(board[cpy][cpx],"\u265c") || !strcmp(board[cpy][cpx],"\u2656")) && (!((mx)>>3)&&!((my)>>3)) && (!a && lane_check(board,cpx,cpy,b,0))^(!b && lane_check(board,cpx,cpy,a,1))){
 				strcpy(board[my][mx],board[cpy][cpx]);
 				strcpy(board[cpy][cpx]," ");
 				return 1;
 			};
 			return 0;
+		case 'B':
+			if((!strcmp(board[cpy][cpx],"\u265d") || !strcmp(board[cpy][cpx],"\u2657")) && (!((mx)>>3)&&!((my)>>3))){
+				return 1;
+			}
 		default:
 			printf("Invalid !\n");
 			return rc;
 	}
 }
 
-int rook_lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X){
+int lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X){
 
 	int iter = ((!!mX) | (mX >> 31)) ? 1 : -1;
 	int i=0;
