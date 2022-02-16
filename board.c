@@ -1,5 +1,4 @@
 //To do:
-//Rook movement --> must return Invalid movement without any collision check in the case where collision occurs before the while loop in the rook movement reachs the desired board piece to move to
 //Bishop movement
 //Queen movement
 //King movement
@@ -17,6 +16,7 @@
 //Movement parsing exception handling --> NO SPACE BETWEEN CHARACTERS
 //Ally-Foe Recognition when collision occurs
 //Rook movement --> Movement obstruction check
+//Rook movement --> must return Invalid movement without any collision check in the case where collision occurs before the while loop in the rook movement reachs the desired board piece to move to
 
 
 
