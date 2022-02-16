@@ -1,5 +1,5 @@
 //To do:
-//Bishop movement
+//Rook movement logic needs to be updated in lane_check (Utilize similar logic to Bishop movement)
 //Queen movement
 //King movement
 //Pawn movement
@@ -17,6 +17,7 @@
 //Ally-Foe Recognition when collision occurs
 //Rook movement --> Movement obstruction check
 //Rook movement --> must return Invalid movement without any collision check in the case where collision occurs before the while loop in the rook movement reachs the desired board piece to move to
+//Bishop movement
 
 
 
