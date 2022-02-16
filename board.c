@@ -26,7 +26,7 @@
 #include <string.h>
 #include <regex.h>
 
-int lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X);
+int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY, short X);
 void next_move(char board[8][8][4], char* move, size_t buff_size);
 void current_board(char board[8][8][4], const char* next_move);
 int check_move(char board[8][8][4], char* curr_place, char* move);
@@ -39,7 +39,7 @@ int main(int argc, char* argv[argc+1]){
 			{"\u265c","\u265e","\u265d","\u265b","\u265a","\u265d","\u265e","\u265c"}
 			,{"\u265f","\u265f","\u265f","\u265f","\u265f","\u265f","\u265f","\u265f"}
 			,{" "," "," "," "," "," "," "," "}
-			,{" ","\u265c"," "," "," "," "," "," "}
+			,{" ","\u265d"," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{"\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659"}
@@ -119,26 +119,29 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 			};
 			return 0;
 		case 'R':
-			if((!strcmp(board[cpy][cpx],"\u265c") || !strcmp(board[cpy][cpx],"\u2656")) && (!((mx)>>3)&&!((my)>>3)) && (!a && lane_check(board,cpx,cpy,b,0))^(!b && lane_check(board,cpx,cpy,a,1))){
+			if((!strcmp(board[cpy][cpx],"\u265c") || !strcmp(board[cpy][cpx],"\u2656")) && (!((mx)>>3)&&!((my)>>3)) && (!a && lane_check(board,cpx,cpy,b,0,0))^(!b && lane_check(board,cpx,cpy,a,0,1))){
 				strcpy(board[my][mx],board[cpy][cpx]);
 				strcpy(board[cpy][cpx]," ");
 				return 1;
 			};
 			return 0;
 		case 'B':
-			if((!strcmp(board[cpy][cpx],"\u265d") || !strcmp(board[cpy][cpx],"\u2657")) && (!((mx)>>3)&&!((my)>>3))){
+			if((!strcmp(board[cpy][cpx],"\u265d") || !strcmp(board[cpy][cpx],"\u2657")) && (!((mx)>>3)&&!((my)>>3)) && a<<29&b<<29 && lane_check(board,cpx,cpy,a,b,2)){
+				strcpy(board[my][mx],board[cpy][cpx]);
+				strcpy(board[cpy][cpx]," ");
 				return 1;
 			}
+			return 0;
 		default:
 			printf("Invalid !\n");
 			return rc;
 	}
 }
 
-int lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X){
+int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY, short X){
 
 	int iter = ((!!mX) | (mX >> 31)) ? 1 : -1;
-	int i=0;
+	int i=0, j=0, si=0, sj=0;
 	printf("mX= %d, iter= %d, X=%d\n", mX, iter, X);
 	switch(X){
 		case 0:
@@ -203,6 +206,24 @@ int lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X){
 				} while(mX-i);
 				return 1;
 			};
+		case 2:
+			printf("CASE 2");
+			do{
+				i = 1 | (mX>>31)<<31;
+				j = 1 | (mY>>31)<<31;
+				si = i;
+				sj = j;
+				printf("mX=%d, mY=%d\n", mX, mY);
+				printf("cpy=%d, cpx=%d, %s\n", cpy+j, cpx+i, board[cpy+j][cpx+i]);
+				if(!strcmp(board[cpy+j][cpx+i]," "))
+					printf("empty");
+				else {
+					printf("Collision !\n");
+					return mX-i ? 0 : colli_handl(board[cpy][cpx], board[cpy+j][cpx+i]);
+				}
+				i+=si;
+			} while(mX-i);
+			return 1;
 	}
 
 	return 0;
