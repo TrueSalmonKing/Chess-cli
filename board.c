@@ -133,70 +133,74 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 int rook_lane_check(char board[8][8][4], int cpx, int cpy, int mX, short X){
 
 	int iter = ((!!mX) | (mX >> 31)) ? 1 : -1;
-	printf("mX= %d, iter= %d\n", mX, iter);
+	int i=0;
+	printf("mX= %d, iter= %d, X=%d\n", mX, iter, X);
 	switch(X){
 		case 0:
 			if(mX&0x80000000){
+				i = -1;
 				printf("NEGATIVE\n");
-				while(mX){
-					printf("mX= %d\n", mX);
-					printf("cpy=%d, cpx=%d, %s\n", cpy+mX, cpx, board[cpy+mX][cpx]);
-					if(!strcmp(board[cpy+mX][cpx]," "))
+				do{
+					printf("mX=%d\n", mX);
+					printf("cpy=%d, cpx=%d, %s\n", cpy+i, cpx, board[cpy+i][cpx]);
+					if(!strcmp(board[cpy+i][cpx]," "))
 						printf("empty\n");
 					else {
 						printf("Collision !\n");
-						return colli_handl(board[cpy][cpx], board[cpy+mX][cpx]);
+						return colli_handl(board[cpy][cpx], board[cpy+i][cpx]);
 					}
-					mX += iter;
-				}
+					--i;
+				} while(mX-i);
 				return 1;
 			} else {
-				while(mX){
-					printf("%d\n", mX);
-					printf("cpy=%d, cpx=%d, \"%s\"\n", cpy+mX, cpx, board[cpy+mX][cpx]);
-					if(!strcmp(board[cpy+mX][cpx]," "))
+				i = 1;
+				do{
+					printf("mX=%d\n", mX);
+					printf("cpy=%d, cpx=%d, %s\n", cpy+i, cpx, board[cpy+i][cpx]);
+					if(!strcmp(board[cpy+i][cpx]," "))
 						printf("empty");
 					else {
 						printf("Collision !\n");
-						return colli_handl(board[cpy][cpx], board[cpy+mX][cpx]);
+						return colli_handl(board[cpy][cpx], board[cpy+i][cpx]);
 					}
-					mX -= iter;
-				}
+					++i;
+				} while (mX-i);
 				return 1;
 			};
 		case 1:
 			if(mX&0x80000000){
 				printf("NEGATIVE");
-				while(mX){
-					printf("%d\n", mX);
-					printf("cpy=%d, cpx=%d, %s\n", cpy, cpx+mX, board[cpy][cpx+mX]);
-					if(!strcmp(board[cpy][cpx+mX]," "))
+				do{
+					i = -1;
+					printf("mX=%d\n", mX);
+					printf("cpy=%d, cpx=%d, %s\n", cpy, cpx+i, board[cpy][cpx+i]);
+					if(!strcmp(board[cpy][cpx+i]," "))
 						printf("empty");
 					else {
 						printf("Collision !\n");
-						return colli_handl(board[cpy][cpx], board[cpy][cpx+mX]);
+						return colli_handl(board[cpy][cpx], board[cpy][cpx+i]);
 					}
-					mX += iter;
-				}
+					--i;
+				} while(mX-i);
 				return 1;
 			} else {
-				while(mX){
-					printf("%d\n", mX);
-					printf("cpy=%d, cpx=%d, \"%s\"\n", cpy, cpx+mX, board[cpy][cpx+mX]);
-					if(!strcmp(board[cpy][cpx+mX]," "))
+				do{
+					i = 1;
+					printf("mX=%d\n", mX);
+					printf("cpy=%d, cpx=%d, \"%s\"\n", cpy, cpx+i, board[cpy][cpx+i]);
+					if(!strcmp(board[cpy][cpx+i]," "))
 						printf("empty");
 					else {
 						printf("Collision !\n");
-						return colli_handl(board[cpy][cpx], board[cpy][cpx+mX]);
+						return colli_handl(board[cpy][cpx], board[cpy][cpx+i]);
 					}
-					mX += iter;
-				}
+					++i;
+				} while(mX-i);
 				return 1;
 			};
 	}
 
 	return 0;
-
 }
 
 int colli_handl(char p1[4], char p2[4]){
