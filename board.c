@@ -209,11 +209,11 @@ int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY, short X){
 			};
 		case 2:
 			printf("CASE 2");
+			i = 1 | (mX>>31)<<31;
+			j = 1 | (mY>>31)<<31;
+			si = i;
+			sj = j;
 			do{
-				i = 1 | (mX>>31)<<31;
-				j = 1 | (mY>>31)<<31;
-				si = i;
-				sj = j;
 				printf("mX=%d, mY=%d\n", mX, mY);
 				printf("cpy=%d, cpx=%d, %s\n", cpy+j, cpx+i, board[cpy+j][cpx+i]);
 				if(!strcmp(board[cpy+j][cpx+i]," "))
