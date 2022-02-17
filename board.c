@@ -209,8 +209,8 @@ int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY, short X){
 			};
 		case 2:
 			printf("CASE 2");
-			i = 1 | (mX>>31)<<31;
-			j = 1 | (mY>>31)<<31;
+			i = 0 | (mX>>31)<<31;
+			j = 0 | (mY>>31)<<31;
 			si = i;
 			sj = j;
 			do{
@@ -223,6 +223,7 @@ int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY, short X){
 					return mX-i ? 0 : colli_handl(board[cpy][cpx], board[cpy+j][cpx+i]);
 				}
 				i+=si;
+				j+=sj;
 			} while(mX-i);
 			return 1;
 	}
