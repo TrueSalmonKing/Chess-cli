@@ -1,5 +1,4 @@
 //To do:
-//Rook movement logic needs to be updated in lane_check (Utilize similar logic to Bishop movement)
 //Queen movement
 //King movement
 //Pawn movement
@@ -18,6 +17,7 @@
 //Rook movement --> Movement obstruction check
 //Rook movement --> must return Invalid movement without any collision check in the case where collision occurs before the while loop in the rook movement reachs the desired board piece to move to
 //Bishop movement
+//Rook movement logic needs to be updated in lane_check (Utilize similar logic to Bishop movement)
 
 
 
@@ -27,7 +27,7 @@
 #include <string.h>
 #include <regex.h>
 
-int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY, short X);
+int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY);
 void next_move(char board[8][8][4], char* move, size_t buff_size);
 void current_board(char board[8][8][4], const char* next_move);
 int check_move(char board[8][8][4], char* curr_place, char* move);
@@ -120,14 +120,14 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 			};
 			return 0;
 		case 'R':
-			if((!strcmp(board[cpy][cpx],"\u265c") || !strcmp(board[cpy][cpx],"\u2656")) && (!((mx)>>3)&&!((my)>>3)) && (!a && lane_check(board,cpx,cpy,a,b,0))^(!b && lane_check(board,cpx,cpy,a,b,1))){
+			if((!strcmp(board[cpy][cpx],"\u265c") || !strcmp(board[cpy][cpx],"\u2656")) && (!((mx)>>3)&&!((my)>>3)) && (!a && lane_check(board,cpx,cpy,a,b))^(!b && lane_check(board,cpx,cpy,a,b))){
 				strcpy(board[my][mx],board[cpy][cpx]);
 				strcpy(board[cpy][cpx]," ");
 				return 1;
 			};
 			return 0;
 		case 'B':
-			if((!strcmp(board[cpy][cpx],"\u265d") || !strcmp(board[cpy][cpx],"\u2657")) && (!((mx)>>3)&&!((my)>>3)) && a<<29&b<<29 && lane_check(board,cpx,cpy,a,b,2)){
+			if((!strcmp(board[cpy][cpx],"\u265d") || !strcmp(board[cpy][cpx],"\u2657")) && (!((mx)>>3)&&!((my)>>3)) && a<<29&b<<29 && lane_check(board,cpx,cpy,a,b)){
 				strcpy(board[my][mx],board[cpy][cpx]);
 				strcpy(board[cpy][cpx]," ");
 				return 1;
@@ -139,7 +139,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 	}
 }
 
-int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY, short X){
+int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY){
 
 	int iter = ((!!mX) | (mX >> 31)) ? 1 : -1;
 	int i=0, j=0, si=0, sj=0;
