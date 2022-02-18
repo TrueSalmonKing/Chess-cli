@@ -143,7 +143,7 @@ int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY){
 
 	int iter = ((!!mX) | (mX >> 31)) ? 1 : -1;
 	int i=0, j=0, si=0, sj=0;
-	printf("mX= %d, iter= %d, X=%d\n", mX, iter, X);
+	printf("mX= %d, iter= %d, X=%d\n", mX, iter);
 	printf("CASE 2\n\n\n");
 	si = !mX ? 0 : (mX>>31) ? -1 : 1;
 	sj = !mY ? 0 : (mY>>31) ? -1 : 1;
