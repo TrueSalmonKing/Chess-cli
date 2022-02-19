@@ -40,7 +40,7 @@ int main(int argc, char* argv[argc+1]){
 			{"\u265c","\u265e","\u265d","\u265b","\u265a","\u265d","\u265e","\u265c"}
 			,{"\u265f","\u265f","\u265f","\u265f","\u265f","\u265f","\u265f","\u265f"}
 			,{" "," "," "," "," "," "," "," "}
-			,{" ","\u265d"," "," "," "," "," "," "}
+			,{" ","\u265a"," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{"\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659"}
@@ -133,6 +133,13 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 				return 1;
 			}
 			return 0;
+		case 'Q':
+			if((!strcmp(board[cpy][cpx],"\u265a") || !strcmp(board[cpy][cpx],"\u2654")) && (!((mx)>>3)&&!((my)>>3)) && (a<<29&b<<29 || (!a^!b)) && lane_check(board,cpx,cpy,a,b)){
+				strcpy(board[my][mx],board[cpy][cpx]);
+				strcpy(board[cpy][cpx]," ");
+				return 1;
+			}
+			return 0;
 		default:
 			printf("Invalid !\n");
 			return rc;
@@ -142,17 +149,19 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY){
 
 	int iter = ((!!mX) | (mX >> 31)) ? 1 : -1;
-	int i=0, j=0, si=0, sj=0;
+	int i=0, j=0, k=0, si, sj, x, y;
 	printf("mX= %d, iter= %d, X=%d\n", mX, iter);
 	printf("CASE 2\n\n\n");
+	y = mX > mY ? mX : mY;
 	si = !mX ? 0 : (mX>>31) ? -1 : 1;
 	sj = !mY ? 0 : (mY>>31) ? -1 : 1;
-	i = 0;
-	j = 0;
+	x = !y ? 0 : (y>>31) ? -1 : 1;
+	printf("\n\n IWJEFLWEFLWE y=%d, si=%d, sj=%d, x=%d\n\n", y,si,sj,x);
 
 	do{
 		i+=si;
 		j+=sj;
+		k+=x;
 		printf("mX=%d, mY=%d\n", mX, mY);
 		printf("cpy=%d, cpx=%d, %s\n", cpy+j, cpx+i, board[cpy+j][cpx+i]);
 		if(!strcmp(board[cpy+j][cpx+i]," "))
@@ -161,7 +170,7 @@ int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY){
 			printf("Collision !\n");
 			return mX-i ? 0 : colli_handl(board[cpy][cpx], board[cpy+j][cpx+i]);
 		}
-	} while(mX-i);
+	} while(y-k);
 
 	return 1;
 }
