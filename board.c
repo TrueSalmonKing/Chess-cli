@@ -1,4 +1,6 @@
 //To do:
+//Knight piece collision check must be added (IFF)
+//Regex check must be added to parsed movements
 //Queen movement
 //King movement
 //Pawn movement
@@ -33,6 +35,7 @@ void current_board(char board[8][8][4], const char* next_move);
 int check_move(char board[8][8][4], char* curr_place, char* move);
 int colli_handl(char p1[4], char p2[4]);
 
+//Program entry point
 int main(int argc, char* argv[argc+1]){
 
 //4 bytes to include both the unicode character (3bytes) and the null pointer (1byte), otherwise it will keep on printing characters from the rest of the adjacent strings
@@ -47,9 +50,11 @@ int main(int argc, char* argv[argc+1]){
 			,{"\u2656","\u2658","\u2657","\u2655","\u2654","\u2657","\u2658","\u2656"}
 			};
 
+//Buffer size set to 7 (movements are in the following syntax [Axi Byj]
 	size_t buff_size=7;
 	char * current_move=(char *)malloc(sizeof(char)*buff_size);
 
+//Main program loop
 	while(1){
 		current_board(board, current_move);
 		printf("\nprevious move: %c%c%c %c %c%c%c \nnext move: ",*current_move,*(current_move+1),*(current_move+2),*(current_move+3),*(current_move+4),*(current_move+5),*(current_move+6));
@@ -59,6 +64,7 @@ int main(int argc, char* argv[argc+1]){
 
 }
 
+//Board printing function
 void current_board(char board[8][8][4], const char* next_move){
 	printf(" _a_b_c_d_e_f_g_h\n");
 	for(size_t i=0;i<8;i++){
@@ -74,44 +80,61 @@ void current_board(char board[8][8][4], const char* next_move){
 
 }
 
+//Movement validity check function
 void next_move(char board[8][8][4], char* move, size_t buff_size){
 
 	char * move_1 = malloc(sizeof *move_1 * 3);
 	char * move_2 = malloc(sizeof *move_2 * 3);
 	char delim[]=" ";
 
+//User's input is parsed to get the piece's current position and the desired location to move into
 	getline(&move,&buff_size,stdin);
 	
 	move_1=strtok(move,delim);
 	move_2=strtok(NULL,delim);
 
+//Input invalid in the case where no second move can be parsed from the input (e.g no space between the two movements)
 	if(move_2 == NULL){
 		printf("Invalid move !\n");
 		return;
 	}
-
+//If the user's input is indeed valid we invoke the function check_move
 	if(check_move(board, move_1, move_2))
 		printf("Valid move !\n");
 }
 
+//next_move merely checks if the user input has two tokens delimeted by a space, check_move then subsequently has to first check the syntax of each
 int check_move(char board[8][8][4], char* curr_place, char* move){
+//each chess piece's position on the horizontal axis (x) and vertical axis (y) are assigned two variables cpx and cpy respectivaly, which are mapped accordingly with [a-h] -> [0-7]. We do the same for the positions of the location the player wants to move the piece to with variables mx and my
 	int cpx=curr_place[1]-'a';
 	int cpy=curr_place[2]-'1';
 	int mx=move[1]-'a';
 	int my=move[2]-'1';
 
+//a is the horizontal movement vector magnitude, and b is the vertical movement vector magnitude
 	int a=mx-cpx;
 	int b=my-cpy;
 	int rc;
-	regex_t regex;
 
-	rc=regcomp(&regex, "[RNBKQP][a-h][1-8]",0);
+// Usage of regex is still reaquired !
+//	regex_t regex;
+
+//	rc=regcomp(&regex, "[RNBKQP][a-h][1-8]",0);
 
 // !!!!!!!!!!!!!!! MUST CHECK WHY REGEX DOESN'T ACCEPT "?"
 //	rc=regcomp(&regex, "[RNBKQ]?[a-h][1-8]",0);
-	rc=regexec(&regex,move,0,NULL,0);
+//	rc=regexec(&regex,move,0,NULL,0);
 
+//Depending on the chosen piece, we invoke a specific if statement
+//For each piece, mx and my must not exceed 7, which would result in the piece going out of the board, as such we check for this in the following bitwise operation:
+//	!((my)>>3) && !((mx)>>3)
+//Each current position cpx, cpy must have the unicode representation of the piece required to move, which is indicated by the first letter --> checked with strcmp
+//In the case of a collision the funciton colli_handl is called, supplied with both the current position of the piece and the position of the collision
 	switch (move[0]){
+//Knight chess piece
+//Knight movement corresponds to one move in one axis, with two moves in the other axis, as such we check for this in the following bitwise operation:
+//	( (a&2)&&(b&1) ^ (a&1)&&(b&2) )
+//Knight ches piece has no collision checks, except if the moved to board position isn't empty
 		case 'N':
 			if((!strcmp(board[cpy][cpx],"\u265e") || !strcmp(board[cpy][cpx],"\u2658")) && (!((mx)>>3)&&!((my)>>3)) && (((a&2)&&(b&1))^((a&1)&&(b&2)))){
 				strcpy(board[my][mx],board[cpy][cpx]);
@@ -119,6 +142,8 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 				return 1;
 			};
 			return 0;
+//Rook chess piece
+//Knight movement corresponds to movement in only one axis, as such we check for that with !a or !b, we also have to ensure that the traversed lane with the rook piece must be checked in the case where a collision occurs with a piece, we perform this check with the function lane_check
 		case 'R':
 			if((!strcmp(board[cpy][cpx],"\u265c") || !strcmp(board[cpy][cpx],"\u2656")) && (!((mx)>>3)&&!((my)>>3)) && (!a && lane_check(board,cpx,cpy,a,b))^(!b && lane_check(board,cpx,cpy,a,b))){
 				strcpy(board[my][mx],board[cpy][cpx]);
@@ -126,6 +151,10 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 				return 1;
 			};
 			return 0;
+//Bishop chess piece
+//Bishop movement corresponds to same movement magnitude in both axises, as such we check for that with the following:
+//	a<<29 && b<<29
+//Similar to the rook piece, lane_check must be called
 		case 'B':
 			if((!strcmp(board[cpy][cpx],"\u265d") || !strcmp(board[cpy][cpx],"\u2657")) && (!((mx)>>3)&&!((my)>>3)) && a<<29&b<<29 && lane_check(board,cpx,cpy,a,b)){
 				strcpy(board[my][mx],board[cpy][cpx]);
@@ -133,6 +162,8 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 				return 1;
 			}
 			return 0;
+//Queen chess piece
+//Queen combines both the logic of Rook and Bishop
 		case 'Q':
 			if((!strcmp(board[cpy][cpx],"\u265a") || !strcmp(board[cpy][cpx],"\u2654")) && (!((mx)>>3)&&!((my)>>3)) && (a<<29&b<<29 || (!a^!b)) && lane_check(board,cpx,cpy,a,b)){
 				strcpy(board[my][mx],board[cpy][cpx]);
@@ -146,6 +177,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 	}
 }
 
+//The main function that checks whether a specific lane during movement is empty for the rook, bishop and queen pieces
 int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY){
 
 	int iter = ((!!mX) | (mX >> 31)) ? 1 : -1;
