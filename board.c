@@ -150,11 +150,13 @@ int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY){
 
 	int iter = ((!!mX) | (mX >> 31)) ? 1 : -1;
 	int i=0, j=0, k=0, si, sj, x, y;
+	int maskX = (mX>>31);
+	int maskY = (mY>>31);
 	printf("mX= %d, iter= %d, X=%d\n", mX, iter);
 	printf("CASE 2\n\n\n");
-	y = mX > mY ? mX : mY;
-	si = !mX ? 0 : (mX>>31) ? -1 : 1;
-	sj = !mY ? 0 : (mY>>31) ? -1 : 1;
+	y = (((mX+maskX)^maskX) - ((mY+maskY)^maskY))>>31 ? mY : mX;
+	si = !mX ? 0 : maskX ? -1 : 1;
+	sj = !mY ? 0 : maskY ? -1 : 1;
 	x = !y ? 0 : (y>>31) ? -1 : 1;
 	printf("\n\n IWJEFLWEFLWE y=%d, si=%d, sj=%d, x=%d\n\n", y,si,sj,x);
 
@@ -168,7 +170,7 @@ int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY){
 			printf("empty");
 		else {
 			printf("Collision !\n");
-			return mX-i ? 0 : colli_handl(board[cpy][cpx], board[cpy+j][cpx+i]);
+			return y-k ? 0 : colli_handl(board[cpy][cpx], board[cpy+j][cpx+i]);
 		}
 	} while(y-k);
 
