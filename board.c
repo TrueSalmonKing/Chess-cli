@@ -1,5 +1,4 @@
 //To do:
-//Knight piece collision check must be added (IFF)
 //Regex check must be added to parsed movements
 //Queen movement
 //King movement
@@ -20,6 +19,7 @@
 //Rook movement --> must return Invalid movement without any collision check in the case where collision occurs before the while loop in the rook movement reachs the desired board piece to move to
 //Bishop movement
 //Rook movement logic needs to be updated in lane_check (Utilize similar logic to Bishop movement)
+//Knight piece collision check must be added (IFF)
 
 
 
