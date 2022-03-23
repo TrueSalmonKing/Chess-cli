@@ -1,6 +1,5 @@
 //To do:
 //Regex check must be added to parsed movements
-//Queen movement
 //King movement
 //Pawn movement
 //Pawn to Queen conversion
@@ -20,6 +19,7 @@
 //Bishop movement
 //Rook movement logic needs to be updated in lane_check (Utilize similar logic to Bishop movement)
 //Knight piece collision check must be added (IFF)
+//Queen movement
 
 
 
@@ -174,6 +174,15 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 		default:
 			printf("Invalid !\n");
 			return rc;
+		case 'P':
+			printf("AAAAAAAAAAAAA a=%d, ",a);
+			printf("AAAAAAAAAA !(a-1) = %d, !(a+1) + %d, XOR'd = %d", !(a-1), !(a+1), !(a-1)^!(a+1));
+			if( (!((mx)>>3)&&!((my)>>3)) && ( (!strcmp(board[cpy][cpx],"\u265f") && !(b-1) && (!a ? colli_handl(board[cpy][cpx],board[my][cpx]) : (!(a-1)^!(a+1)&strcmp(board[my][mx]," ") ? colli_handl(board[cpy][cpx],board[my][mx]) : 0 )) ) || (!strcmp(board[cpy][cpx],"\u2659") && !(b+1) && colli_handl(board[cpy][cpx],board[my][cpx]))) ){
+				strcpy(board[my][mx],board[cpy][cpx]);
+				strcpy(board[cpy][cpx]," ");
+				return 1;
+			};
+			return 0;
 	}
 }
 
