@@ -1,0 +1,5 @@
+# Ignoring object files
+board
+check_if
+test
+utftest
