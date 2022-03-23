@@ -136,7 +136,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 //	( (a&2)&&(b&1) ^ (a&1)&&(b&2) )
 //Knight ches piece has no collision checks, except if the moved to board position isn't empty
 		case 'N':
-			if((!strcmp(board[cpy][cpx],"\u265e") || !strcmp(board[cpy][cpx],"\u2658")) && (!((mx)>>3)&&!((my)>>3)) && (((a&2)&&(b&1))^((a&1)&&(b&2)))){
+			if((!strcmp(board[cpy][cpx],"\u265e") || !strcmp(board[cpy][cpx],"\u2658")) && (!((mx)>>3)&&!((my)>>3)) && (((a&2)&&(b&1))^((a&1)&&(b&2))) && colli_handl(board[cpx][cpy],board[my][mx])){
 				strcpy(board[my][mx],board[cpy][cpx]);
 				strcpy(board[cpy][cpx]," ");
 				return 1;
@@ -212,8 +212,9 @@ int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY){
 int colli_handl(char p1[4], char p2[4]){
 
 //colli_handl only gets called if the board piece ISN'T a space
+//UPDATED LOGIC TO ACCOUNT FOR EMPTY PLACEMENTS = the first check is to ensure that the knight movement is able have a collision check as well. A simple xor to ensure that the knight piece is able to move when no piece is on the targeted placement
 //first we compare if its third hex value is larger than 0x93 (smallest chess piece is E2 99 94) and we divide by 6, as the smallest black chess piece has value E2 99 9A (9A - 94 = 6), to check whether it is a black of white piece, we proceed to get the bit value of its range (0 if white, 1 if black) and we XNOR it to the value get from the same operation done on the second piece
 //if differing pieces' collision occurs --> 1 is returned
-	return ((p1[2]-0x94)&0xFF)/6 == !(((p2[2]-0x94)&0xFF)/6);
+	return !strcmp(p1," ") ^ !strcmp(p2, " ") ? 1 : ((p1[2]-0x94)&0xFF)/6 == !(((p2[2]-0x94)&0xFF)/6);
 
 }
