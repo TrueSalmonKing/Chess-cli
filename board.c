@@ -112,6 +112,8 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 	int cpy=curr_place[2]-'1';
 	int mx=move[1]-'a';
 	int my=move[2]-'1';
+	char * piece = board[cpy][cpx];
+	char * placement = board[my][mx];
 
 //a is the horizontal movement vector magnitude, and b is the vertical movement vector magnitude
 	int a=mx-cpx;
@@ -138,18 +140,18 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 //	( (a&2)&&(b&1) ^ (a&1)&&(b&2) )
 //Knight ches piece has no collision checks, except if the moved to board position isn't empty
 		case 'N':
-			if((!strcmp(board[cpy][cpx],"\u265e") || !strcmp(board[cpy][cpx],"\u2658")) && (!((mx)>>3)&&!((my)>>3)) && (((a&2)&&(b&1))^((a&1)&&(b&2))) && colli_handl(board[cpx][cpy],board[my][mx])){
-				strcpy(board[my][mx],board[cpy][cpx]);
-				strcpy(board[cpy][cpx]," ");
+			if((!strcmp(piece,"\u265e") || !strcmp(piece,"\u2658")) && (!((mx)>>3)&&!((my)>>3)) && (((a&2)&&(b&1))^((a&1)&&(b&2))) && colli_handl(piece,placement)){
+				strcpy(placement,piece);
+				strcpy(piece," ");
 				return 1;
 			};
 			return 0;
 //Rook chess piece
 //Knight movement corresponds to movement in only one axis, as such we check for that with !a or !b, we also have to ensure that the traversed lane with the rook piece must be checked in the case where a collision occurs with a piece, we perform this check with the function lane_check
 		case 'R':
-			if((!strcmp(board[cpy][cpx],"\u265c") || !strcmp(board[cpy][cpx],"\u2656")) && (!((mx)>>3)&&!((my)>>3)) && (!a && lane_check(board,cpx,cpy,a,b))^(!b && lane_check(board,cpx,cpy,a,b))){
-				strcpy(board[my][mx],board[cpy][cpx]);
-				strcpy(board[cpy][cpx]," ");
+			if((!strcmp(piece,"\u265c") || !strcmp(piece,"\u2656")) && (!((mx)>>3)&&!((my)>>3)) && (!a && lane_check(board,cpx,cpy,a,b))^(!b && lane_check(board,cpx,cpy,a,b))){
+				strcpy(placement,piece);
+				strcpy(piece," ");
 				return 1;
 			};
 			return 0;
@@ -158,18 +160,18 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 //	a<<29 && b<<29
 //Similar to the rook piece, lane_check must be called
 		case 'B':
-			if((!strcmp(board[cpy][cpx],"\u265d") || !strcmp(board[cpy][cpx],"\u2657")) && (!((mx)>>3)&&!((my)>>3)) && a<<29&b<<29 && lane_check(board,cpx,cpy,a,b)){
-				strcpy(board[my][mx],board[cpy][cpx]);
-				strcpy(board[cpy][cpx]," ");
+			if((!strcmp(piece,"\u265d") || !strcmp(piece,"\u2657")) && (!((mx)>>3)&&!((my)>>3)) && a<<29&b<<29 && lane_check(board,cpx,cpy,a,b)){
+				strcpy(placement,piece);
+				strcpy(piece," ");
 				return 1;
 			}
 			return 0;
 //Queen chess piece
 //Queen combines both the logic of Rook and Bishop
 		case 'Q':
-			if((!strcmp(board[cpy][cpx],"\u265a") || !strcmp(board[cpy][cpx],"\u2654")) && (!((mx)>>3)&&!((my)>>3)) && (a<<29&b<<29 || (!a^!b)) && lane_check(board,cpx,cpy,a,b)){
-				strcpy(board[my][mx],board[cpy][cpx]);
-				strcpy(board[cpy][cpx]," ");
+			if((!strcmp(piece,"\u265a") || !strcmp(piece,"\u2654")) && (!((mx)>>3)&&!((my)>>3)) && (a<<29&b<<29 || (!a^!b)) && lane_check(board,cpx,cpy,a,b)){
+				strcpy(placement,piece);
+				strcpy(piece," ");
 				return 1;
 			}
 			return 0;
@@ -179,16 +181,23 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 //Pawn chess piece
 //Pawn movement corresponds to movement in only one placement in the y-axis (checked using (!a) and !(b-1) if the piece is on the black side, and !(b+1) otherwise), with the possibility of two placements if it's the first movement of the pawn piece and if the placement is empty (checked using (!a), strcmp(board[my][mx]," ") and !(b-2) if the piece is on the black side or !(b+2) otherwise). If the Pawn piece is able to capture an opposing piece then the placement is checked for if it's empty, if not then we confirm that it's indeed an opposing piece (checked using !(a-1)^!(a+1) which works for both colors of pawn pieces, strcmp(board[my][mx]," ") and the same logic using in colli_handl minus the possibility to go to an empty placement)
 		case 'P':
+			printf("AAAAAAAAAAAAA b=%d, ",b);
 			printf("AAAAAAAAAAAAA a=%d, ",!(a-1)^!(a+1));
 //Black Pawn case
-			if(!strcmp(board[cpy][cpx],"\u265f") && (!((mx)>>3)&&!((my)>>3)) && ((!(b-2) && !a && !(cpy-1) && !strcmp(board[my][mx]," ")) || ((!(b-1) && (!a && !strcmp(board[my][mx]," ")) || (!(a-1)^!(a+1) && strcmp(board[my][mx], " ") && ((board[cpy][cpx][2]-0x94)&0xFF)/6 == !(((board[my][mx][2]-0x94)&0xFF)/6)))))){
-				strcpy(board[my][mx],board[cpy][cpx]);
-				strcpy(board[cpy][cpx]," ");
+			if(!strcmp(piece,"\u265f") && (!((mx)>>3)&&!((my)>>3)) 
+&& ((!(b-2) && !a && !(cpy-1) && !strcmp(placement," ")) || 
+(!(b-1) && (!strcmp(placement, " ") ? !a : !(a-1)^!(a+1) && ((piece[2]-0x94)&0xFF)/6 == !(((placement[2]-0x94)&0xFF)/6)))
+)){
+				strcpy(placement,piece);
+				strcpy(piece," ");
 				return 1;
 				
 			};
 //Black Pawn case
-			if(!strcmp(board[cpy][cpx],"\u2659") && (!((mx)>>3)&&!((my)>>3)) && ((!(b+2) && !a && !(cpy+1) && !strcmp(board[my][mx]," ")) || ((!(b+1) && (!a && !strcmp(board[my][mx]," ")) || (!(a-1)^!(a+1) && strcmp(board[my][mx], " ") && ((board[cpy][cpx][2]-0x94)&0xFF)/6 == !(((board[my][mx][2]-0x94)&0xFF)/6)))))){
+			if(!strcmp(piece,"\u2659") && (!((mx)>>3)&&!((my)>>3)) 
+&& ((!(b+2) && !a && !(cpy+1) && !strcmp(placement," ")) || 
+((!(b+1) && (!strcmp(placement," ")) ? !a : !(a-1)^!(a+1) && ((piece[2]-0x94)&0xFF)/6 == !(((placement[2]-0x94)&0xFF)/6)))
+)){
 				strcpy(board[my][mx],board[cpy][cpx]);
 				strcpy(board[cpy][cpx]," ");
 				return 1;
