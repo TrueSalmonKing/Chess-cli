@@ -146,9 +146,6 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 				return 1;
 			};
 			return 0;
-		default:
-			printf("Invalid !\n");
-			return rc;
 //Rook chess piece
 //Knight movement corresponds to movement in only one axis, as such we check for that with !a or !b, we also have to ensure that the traversed lane with the rook piece must be checked in the case where a collision occurs with a piece, we perform this check with the function lane_check
 		case 'R':
@@ -158,9 +155,6 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 				return 1;
 			};
 			return 0;
-		default:
-			printf("Invalid !\n");
-			return rc;
 //Bishop chess piece
 //Bishop movement corresponds to same movement magnitude in both axises, as such we check for that with the following:
 //	a<<29 && b<<29
@@ -172,9 +166,6 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 				return 1;
 			}
 			return 0;
-		default:
-			printf("Invalid !\n");
-			return rc;
 //Queen chess piece
 //Queen combines both the logic of Rook and Bishop
 		case 'Q':
@@ -184,14 +175,9 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 				return 1;
 			}
 			return 0;
-		default:
-			printf("Invalid !\n");
-			return rc;
 //Pawn chess piece
 //Pawn movement corresponds to movement in only one placement in the y-axis (checked using (!a) and !(b-1) if the piece is on the black side, and !(b+1) otherwise), with the possibility of two placements if it's the first movement of the pawn piece and if the placement is empty (checked using (!a), strcmp(board[my][mx]," ") and !(b-2) if the piece is on the black side or !(b+2) otherwise). If the Pawn piece is able to capture an opposing piece then the placement is checked for if it's empty, if not then we confirm that it's indeed an opposing piece (checked using !(a-1)^!(a+1) which works for both colors of pawn pieces, strcmp(board[my][mx]," ") and the same logic using in colli_handl minus the possibility to go to an empty placement)
 		case 'P':
-			printf("AAAAAAAAAAAAA b=%d, ",b);
-			printf("AAAAAAAAAAAAA a=%d, ",!(a-1)^!(a+1));
 //Black Pawn case
 			if(!strcmp(piece,"\u265f") && (!((mx)>>3)&&!((my)>>3)) 
 && ((!(b-2) && !a && !(cpy-1) && !strcmp(placement," ")) || 
@@ -203,16 +189,24 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 				
 			};
 			return 0;
-		default:
-			printf("Invalid !\n");
-			return rc;
-//Black Pawn case
+//White Pawn case
 			if(!strcmp(piece,"\u2659") && (!((mx)>>3)&&!((my)>>3)) 
 && ((!(b+2) && !a && !(cpy+1) && !strcmp(placement," ")) || 
 ((!(b+1) && (!strcmp(placement," ")) ? !a : !(a-1)^!(a+1) && ((piece[2]-0x94)&0xFF)/6 == !(((placement[2]-0x94)&0xFF)/6)))
 )){
 				strcpy(board[my][mx],board[cpy][cpx]);
 				strcpy(board[cpy][cpx]," ");
+				return 1;
+				
+			};
+			return 0;
+//King chess piece
+		case 'K':
+			printf("AAAAAAAAAAAAA b=%d, ",b);
+			printf("AAAAAAAAAAAAA a=%d, ",!(a-1)^!(a+1));
+			if(!strcmp(piece,"\u265b") && !strcmp(piece,"\u2655") && (!((mx)>>3)&&!((my)>>3))){
+				strcpy(placement,piece);
+				strcpy(piece," ");
 				return 1;
 				
 			};
