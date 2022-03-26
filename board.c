@@ -1,7 +1,8 @@
 //To do:
+//Pawn piece conversion
+//Pawn En Passant movement
 //Regex check must be added to parsed movements
 //King movement
-//Pawn movement
 //Pawn to Queen conversion
 //Co-op playstyle implementation
 //Timer + Turns
@@ -20,6 +21,7 @@
 //Rook movement logic needs to be updated in lane_check (Utilize similar logic to Bishop movement)
 //Knight piece collision check must be added (IFF)
 //Queen movement
+//Initial Pawn movement
 
 
 
@@ -44,7 +46,7 @@ int main(int argc, char* argv[argc+1]){
 			,{"\u265f","\u265f","\u265f","\u265f","\u265f","\u265f","\u265f","\u265f"}
 			,{" "," "," "," "," "," "," "," "}
 			,{" ","\u265a"," "," "," "," "," "," "}
-			,{" "," "," "," "," "," "," "," "}
+			,{" ","\u2659","\u2659"," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{"\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659"}
 			,{"\u2656","\u2658","\u2657","\u2655","\u2654","\u2657","\u2658","\u2656"}
@@ -174,13 +176,23 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 		default:
 			printf("Invalid !\n");
 			return rc;
+//Pawn chess piece
+//Pawn movement corresponds to movement in only one placement in the y-axis (checked using (!a) and !(b-1) if the piece is on the black side, and !(b+1) otherwise), with the possibility of two placements if it's the first movement of the pawn piece and if the placement is empty (checked using (!a), strcmp(board[my][mx]," ") and !(b-2) if the piece is on the black side or !(b+2) otherwise). If the Pawn piece is able to capture an opposing piece then the placement is checked for if it's empty, if not then we confirm that it's indeed an opposing piece (checked using !(a-1)^!(a+1) which works for both colors of pawn pieces, strcmp(board[my][mx]," ") and the same logic using in colli_handl minus the possibility to go to an empty placement)
 		case 'P':
-			printf("AAAAAAAAAAAAA a=%d, ",a);
-			printf("AAAAAAAAAA !(a-1) = %d, !(a+1) + %d, XOR'd = %d", !(a-1), !(a+1), !(a-1)^!(a+1));
-			if( (!((mx)>>3)&&!((my)>>3)) && ( (!strcmp(board[cpy][cpx],"\u265f") && !(b-1) && (!a ? colli_handl(board[cpy][cpx],board[my][cpx]) : (!(a-1)^!(a+1)&strcmp(board[my][mx]," ") ? colli_handl(board[cpy][cpx],board[my][mx]) : 0 )) ) || (!strcmp(board[cpy][cpx],"\u2659") && !(b+1) && colli_handl(board[cpy][cpx],board[my][cpx]))) ){
+			printf("AAAAAAAAAAAAA a=%d, ",!(a-1)^!(a+1));
+//Black Pawn case
+			if(!strcmp(board[cpy][cpx],"\u265f") && (!((mx)>>3)&&!((my)>>3)) && ((!(b-2) && !a && !(cpy-1) && !strcmp(board[my][mx]," ")) || ((!(b-1) && (!a && !strcmp(board[my][mx]," ")) || (!(a-1)^!(a+1) && strcmp(board[my][mx], " ") && ((board[cpy][cpx][2]-0x94)&0xFF)/6 == !(((board[my][mx][2]-0x94)&0xFF)/6)))))){
 				strcpy(board[my][mx],board[cpy][cpx]);
 				strcpy(board[cpy][cpx]," ");
 				return 1;
+				
+			};
+//Black Pawn case
+			if(!strcmp(board[cpy][cpx],"\u2659") && (!((mx)>>3)&&!((my)>>3)) && ((!(b+2) && !a && !(cpy+1) && !strcmp(board[my][mx]," ")) || ((!(b+1) && (!a && !strcmp(board[my][mx]," ")) || (!(a-1)^!(a+1) && strcmp(board[my][mx], " ") && ((board[cpy][cpx][2]-0x94)&0xFF)/6 == !(((board[my][mx][2]-0x94)&0xFF)/6)))))){
+				strcpy(board[my][mx],board[cpy][cpx]);
+				strcpy(board[cpy][cpx]," ");
+				return 1;
+				
 			};
 			return 0;
 	}
