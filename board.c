@@ -29,15 +29,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <regex.h>
-
-int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY);
-void next_move(char board[8][8][4], char* move, size_t buff_size);
-void current_board(char board[8][8][4], const char* next_move);
-int check_move(char board[8][8][4], char* curr_place, char* move);
-int colli_handl(char p1[4], char p2[4]);
+#include "board.h"
 
 //Program entry point
-int main(int argc, char* argv[argc+1]){
+int main(int argc, char* argv[argc+1]) {
 
 //4 bytes to include both the unicode character (3bytes) and the null pointer (1byte), otherwise it will keep on printing characters from the rest of the adjacent strings
 	char board[8][8][4]={
@@ -56,7 +51,7 @@ int main(int argc, char* argv[argc+1]){
 	char * current_move=(char *)malloc(sizeof(char)*buff_size);
 
 //Main program loop
-	while(1){
+	while(1) {
 		current_board(board, current_move);
 		printf("\nprevious move: %c%c%c %c %c%c%c \nnext move: ",*current_move,*(current_move+1),*(current_move+2),*(current_move+3),*(current_move+4),*(current_move+5),*(current_move+6));
 		next_move(board,current_move, buff_size);
@@ -66,7 +61,7 @@ int main(int argc, char* argv[argc+1]){
 }
 
 //Board printing function
-void current_board(char board[8][8][4], const char* next_move){
+void current_board(char board[8][8][4], const char* next_move) {
 	printf(" _a_b_c_d_e_f_g_h\n");
 	for(size_t i=0;i<8;i++){
 		printf("%lu|",i+1);
@@ -81,8 +76,10 @@ void current_board(char board[8][8][4], const char* next_move){
 
 }
 
+
+
 //Movement validity check function
-void next_move(char board[8][8][4], char* move, size_t buff_size){
+void next_move(char board[8][8][4], char* move, size_t buff_size) {
 
 	char * move_1 = malloc(sizeof *move_1 * 3);
 	char * move_2 = malloc(sizeof *move_2 * 3);
@@ -105,13 +102,13 @@ void next_move(char board[8][8][4], char* move, size_t buff_size){
 }
 
 //next_move merely checks if the user input has two tokens delimeted by a space, check_move then subsequently has to first check the syntax of each
-int check_move(char board[8][8][4], char* curr_place, char* move){
+int check_move(char board[8][8][4], char* curr_place, char* move) {
 //each chess piece's position on the horizontal axis (x) and vertical axis (y) are assigned two variables cpx and cpy respectivaly, which are mapped accordingly with [a-h] -> [0-7]. We do the same for the positions of the location the player wants to move the piece to with variables mx and my
 	int cpx=curr_place[1]-'a';
 	int cpy=curr_place[2]-'1';
 	int mx=move[1]-'a';
 	int my=move[2]-'1';
-	char * piece = board[cpy][cpx];
+	char * piece = piece;
 	char * placement = board[my][mx];
 
 //a is the horizontal movement vector magnitude, and b is the vertical movement vector magnitude
@@ -133,13 +130,13 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 //	!((my)>>3) && !((mx)>>3)
 //Each current position cpx, cpy must have the unicode representation of the piece required to move, which is indicated by the first letter --> checked with strcmp
 //In the case of a collision the funciton colli_handl is called, supplied with both the current position of the piece and the position of the collision
-	switch (move[0]){
+	switch (move[0]) {
 //Knight chess piece
 //Knight movement corresponds to one move in one axis, with two moves in the other axis, as such we check for this in the following bitwise operation:
 //	( (a&2)&&(b&1) ^ (a&1)&&(b&2) )
 //Knight ches piece has no collision checks, except if the moved to board position isn't empty
 		case 'N':
-			if((!strcmp(piece,"\u265e") || !strcmp(piece,"\u2658")) && (!((mx)>>3)&&!((my)>>3)) && (((a&2)&&(b&1))^((a&1)&&(b&2))) && colli_handl(piece,placement)){
+			if((!strcmp(piece,"\u265e") || !strcmp(piece,"\u2658")) && (!((mx)>>3)&&!((my)>>3)) && (((a&2)&&(b&1))^((a&1)&&(b&2))) && colli_handl(piece,placement)) {
 				strcpy(placement,piece);
 				strcpy(piece," ");
 				return 1;
@@ -148,7 +145,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 //Rook chess piece
 //Knight movement corresponds to movement in only one axis, as such we check for that with !a or !b, we also have to ensure that the traversed lane with the rook piece must be checked in the case where a collision occurs with a piece, we perform this check with the function lane_check
 		case 'R':
-			if((!strcmp(piece,"\u265c") || !strcmp(piece,"\u2656")) && (!((mx)>>3)&&!((my)>>3)) && (!a && lane_check(board,cpx,cpy,a,b))^(!b && lane_check(board,cpx,cpy,a,b))){
+			if((!strcmp(piece,"\u265c") || !strcmp(piece,"\u2656")) && (!((mx)>>3)&&!((my)>>3)) && (!a && lane_check(board,cpx,cpy,a,b))^(!b && lane_check(board,cpx,cpy,a,b))) {
 				strcpy(placement,piece);
 				strcpy(piece," ");
 				return 1;
@@ -159,7 +156,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 //	a<<29 && b<<29
 //Similar to the rook piece, lane_check must be called
 		case 'B':
-			if((!strcmp(piece,"\u265d") || !strcmp(piece,"\u2657")) && (!((mx)>>3)&&!((my)>>3)) && a<<29&b<<29 && lane_check(board,cpx,cpy,a,b)){
+			if((!strcmp(piece,"\u265d") || !strcmp(piece,"\u2657")) && (!((mx)>>3)&&!((my)>>3)) && a<<29&b<<29 && lane_check(board,cpx,cpy,a,b)) {
 				strcpy(placement,piece);
 				strcpy(piece," ");
 				return 1;
@@ -168,7 +165,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 //Queen chess piece
 //Queen combines both the logic of Rook and Bishop
 		case 'Q':
-			if((!strcmp(piece,"\u265a") || !strcmp(piece,"\u2654")) && (!((mx)>>3)&&!((my)>>3)) && (a<<29&b<<29 || (!a^!b)) && lane_check(board,cpx,cpy,a,b)){
+			if((!strcmp(piece,"\u265a") || !strcmp(piece,"\u2654")) && (!((mx)>>3)&&!((my)>>3)) && (a<<29&b<<29 || (!a^!b)) && lane_check(board,cpx,cpy,a,b)) {
 				strcpy(placement,piece);
 				strcpy(piece," ");
 				return 1;
@@ -181,7 +178,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 			if(!strcmp(piece,"\u265f") && (!((mx)>>3)&&!((my)>>3)) 
 && ((!(b-2) && !a && !(cpy-1) && !strcmp(placement," ")) || 
 (!(b-1) && (!strcmp(placement, " ") ? !a : !(a-1)^!(a+1) && ((piece[2]-0x94)&0xFF)/6 == !(((placement[2]-0x94)&0xFF)/6)))
-)){
+)) {
 				strcpy(placement,piece);
 				strcpy(piece," ");
 				return 1;
@@ -192,7 +189,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 			if(!strcmp(piece,"\u2659") && (!((mx)>>3)&&!((my)>>3)) 
 && ((!(b+2) && !a && !(cpy+1) && !strcmp(placement," ")) || 
 ((!(b+1) && (!strcmp(placement," ")) ? !a : !(a-1)^!(a+1) && ((piece[2]-0x94)&0xFF)/6 == !(((placement[2]-0x94)&0xFF)/6)))
-)){
+)) {
 				strcpy(board[my][mx],board[cpy][cpx]);
 				strcpy(board[cpy][cpx]," ");
 				return 1;
@@ -202,7 +199,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 //King chess piece
 //Allows for movement in any placement with one displacement in each axis
 		case 'K':
-			if((!strcmp(piece,"\u265a") || !strcmp(piece,"\u2654")) && (!((mx)>>3)&&!((my)>>3)) && (!(((a+(a>>31))^(a>>31))>>1)&&!(((b+(b>>31))^(b>>31))>>1)) && colli_handl(piece,placement)){
+			if((!strcmp(piece,"\u265a") || !strcmp(piece,"\u2654")) && (!((mx)>>3)&&!((my)>>3)) && (!(((a+(a>>31))^(a>>31))>>1)&&!(((b+(b>>31))^(b>>31))>>1)) && colli_handl(piece,placement)) {
 				strcpy(placement,piece);
 				strcpy(piece," ");
 				return 1;
@@ -216,7 +213,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 }
 
 //The main function that checks whether a specific lane during movement is empty for the rook, bishop and queen pieces
-int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY){
+int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY) {
 
 	int iter = ((!!mX) | (mX >> 31)) ? 1 : -1;
 	int i=0, j=0, k=0, si, sj, x, y;
@@ -247,7 +244,7 @@ int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY){
 	return 1;
 }
 
-int colli_handl(char p1[4], char p2[4]){
+int colli_handl(char p1[4], char p2[4]) {
 
 //colli_handl only gets called if the board piece ISN'T a space
 //UPDATED LOGIC TO ACCOUNT FOR EMPTY PLACEMENTS = the first check is to ensure that the knight movement is able have a collision check as well. A simple xor to ensure that the knight piece is able to move when no piece is on the targeted placement
@@ -255,4 +252,7 @@ int colli_handl(char p1[4], char p2[4]){
 //if differing pieces' collision occurs --> 1 is returned
 	return !strcmp(p1," ") ^ !strcmp(p2, " ") ? 1 : ((p1[2]-0x94)&0xFF)/6 == !(((p2[2]-0x94)&0xFF)/6);
 
+}
+
+void next(LinkedList * l, Node * n) {
 }
