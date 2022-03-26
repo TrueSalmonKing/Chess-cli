@@ -2,8 +2,6 @@
 //Pawn piece conversion
 //Pawn En Passant movement
 //Regex check must be added to parsed movements
-//King movement
-//Pawn to Queen conversion
 //Co-op playstyle implementation
 //Timer + Turns
 //AI Implementation
@@ -22,6 +20,7 @@
 //Knight piece collision check must be added (IFF)
 //Queen movement
 //Initial Pawn movement
+//King movement
 
 
 
@@ -201,6 +200,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 			};
 			return 0;
 //King chess piece
+//Allows for movement in any placement with one displacement in each axis
 		case 'K':
 			if((!strcmp(piece,"\u265a") || !strcmp(piece,"\u2654")) && (!((mx)>>3)&&!((my)>>3)) && (!(((a+(a>>31))^(a>>31))>>1)&&!(((b+(b>>31))^(b>>31))>>1)) && colli_handl(piece,placement)){
 				strcpy(placement,piece);
