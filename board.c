@@ -146,6 +146,9 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 				return 1;
 			};
 			return 0;
+		default:
+			printf("Invalid !\n");
+			return rc;
 //Rook chess piece
 //Knight movement corresponds to movement in only one axis, as such we check for that with !a or !b, we also have to ensure that the traversed lane with the rook piece must be checked in the case where a collision occurs with a piece, we perform this check with the function lane_check
 		case 'R':
@@ -155,6 +158,9 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 				return 1;
 			};
 			return 0;
+		default:
+			printf("Invalid !\n");
+			return rc;
 //Bishop chess piece
 //Bishop movement corresponds to same movement magnitude in both axises, as such we check for that with the following:
 //	a<<29 && b<<29
@@ -166,6 +172,9 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 				return 1;
 			}
 			return 0;
+		default:
+			printf("Invalid !\n");
+			return rc;
 //Queen chess piece
 //Queen combines both the logic of Rook and Bishop
 		case 'Q':
@@ -193,6 +202,10 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 				return 1;
 				
 			};
+			return 0;
+		default:
+			printf("Invalid !\n");
+			return rc;
 //Black Pawn case
 			if(!strcmp(piece,"\u2659") && (!((mx)>>3)&&!((my)>>3)) 
 && ((!(b+2) && !a && !(cpy+1) && !strcmp(placement," ")) || 
@@ -204,6 +217,9 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 				
 			};
 			return 0;
+		default:
+			printf("Invalid !\n");
+			return rc;
 	}
 }
 
