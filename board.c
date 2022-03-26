@@ -202,9 +202,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move){
 			return 0;
 //King chess piece
 		case 'K':
-			printf("AAAAAAAAAAAAA b=%d, ",b);
-			printf("AAAAAAAAAAAAA a=%d, ",!(a-1)^!(a+1));
-			if(!strcmp(piece,"\u265b") && !strcmp(piece,"\u2655") && (!((mx)>>3)&&!((my)>>3))){
+			if((!strcmp(piece,"\u265a") || !strcmp(piece,"\u2654")) && (!((mx)>>3)&&!((my)>>3)) && (!(((a+(a>>31))^(a>>31))>>1)&&!(((b+(b>>31))^(b>>31))>>1)) && colli_handl(piece,placement)){
 				strcpy(placement,piece);
 				strcpy(piece," ");
 				return 1;
