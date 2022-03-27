@@ -16,6 +16,7 @@ void next_move(char board[8][8][4], char* move, size_t buff_size);
 void current_board(char board[8][8][4], const char* next_move);
 int check_move(char board[8][8][4], char* curr_place, char* move);
 int colli_handl(char p1[4], char p2[4]);
-void next(LinkedList * l, Node * n);
+void add(LinkedList * l, Node * n);
+void randomNode(LinkedList * l, Node * n);
 
 #endif

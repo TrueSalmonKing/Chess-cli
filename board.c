@@ -23,18 +23,36 @@
 //King movement
 
 
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <regex.h>
+#include <time.h>
 #include "board.h"
 
 //Program entry point
 int main(int argc, char* argv[argc+1]) {
 
 //4 bytes to include both the unicode character (3bytes) and the null pointer (1byte), otherwise it will keep on printing characters from the rest of the adjacent strings
+
+	Node n1,n2,n3,n4,n5,n6;
+	LinkedList * l = malloc(sizeof(*l));
+
+	memcpy(n1.move,"BAD BAD",7);
+	memcpy(n2.move,"TOD TOD",7);
+	memcpy(n3.move,"SOS SOS",7);
+	memcpy(n4.move,"POP POP",7);
+	memcpy(n5.move,"ZAP PAP",7);
+
+	add(l,&n1);
+	add(l,&n2);
+	add(l,&n3);
+	add(l,&n4);
+	add(l,&n5);
+
+	randomNode(l,&n6);
+	printf("random node = \"%s\"",n6.move);
+
 	char board[8][8][4]={
 			{"\u265c","\u265e","\u265d","\u265b","\u265a","\u265d","\u265e","\u265c"}
 			,{"\u265f","\u265f","\u265f","\u265f","\u265f","\u265f","\u265f","\u265f"}
@@ -254,5 +272,52 @@ int colli_handl(char p1[4], char p2[4]) {
 
 }
 
-void next(LinkedList * l, Node * n) {
+void add(LinkedList * l, Node * n) {
+
+	if(!l->head){
+		n->next=NULL;
+		l->head=n;
+		l->size=1;
+		return;
+	}
+
+	if(!l->head->next){
+		n->next=NULL;
+		l->head->next=n;
+		l->size=2;
+		return;
+	}
+
+	Node * iterator_n = l->head->next;
+
+	while(iterator_n->next)
+		iterator_n = iterator_n->next;
+
+	++l->size;
+
+	iterator_n->next = n;
+	n->next=NULL;
+}
+
+void randomNode(LinkedList * l, Node * n) {
+
+	if(!l) {
+		printf("Empty list");
+		return;
+	}
+
+	srand(time(NULL));
+	int r = rand() % l->size;
+
+	Node * iterator_n = malloc(sizeof(*iterator_n));
+
+	iterator_n = l->head;
+	int i = 0;
+
+	while(r>i && iterator_n->next) {
+		++i;
+		iterator_n = iterator_n->next;
+	}
+
+	*n=*iterator_n;
 }
