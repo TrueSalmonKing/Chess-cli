@@ -18,5 +18,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move);
 int colli_handl(char p1[4], char p2[4]);
 void add(LinkedList * l, Node * n);
 void randomNode(LinkedList * l, Node * n);
+void updateLegalMoves(char board[8][8][4], LinkedList * whiteMoves, LinkedList * blackMoves);
+void getMoveSyntax(char board[8][8][4], int i, int j, char * move);
 
 #endif
