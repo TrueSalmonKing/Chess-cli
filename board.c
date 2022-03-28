@@ -106,6 +106,7 @@ void current_board(char board[8][8][4], const char* next_move) {
 //Movement validity check function
 void next_move(char board[8][8][4], char* move, size_t buff_size) {
 
+	int cpx = 0, cpy = 0, mx = 0, my = 0;
 	char * move_1 = malloc(sizeof *move_1 * 3);
 	char * move_2 = malloc(sizeof *move_2 * 3);
 	char delim[]=" ";
@@ -122,17 +123,19 @@ void next_move(char board[8][8][4], char* move, size_t buff_size) {
 		return;
 	}
 //If the user's input is indeed valid we invoke the function check_move
-	if(check_move(board, move_1, move_2))
+	if(check_move(board, move_1, move_2, cpx, cpy, mx, my) == 1) {
+	//	move_actuate(board, move_1, move_2);
 		printf("Valid move !\n");
+	}
 }
 
 //next_move merely checks if the user input has two tokens delimeted by a space, check_move then subsequently has to first check the syntax of each
-int check_move(char board[8][8][4], char* curr_place, char* move) {
+int check_move(char board[8][8][4], char* curr_place, char* move, int cpx, int cpy, int mx, int my) {
 //each chess piece's position on the horizontal axis (x) and vertical axis (y) are assigned two variables cpx and cpy respectivaly, which are mapped accordingly with [a-h] -> [0-7]. We do the same for the positions of the location the player wants to move the piece to with variables mx and my
-	int cpx=curr_place[1]-'a';
-	int cpy=curr_place[2]-'1';
-	int mx=move[1]-'a';
-	int my=move[2]-'1';
+	cpx=curr_place[1]-'a';
+	cpy=curr_place[2]-'1';
+	mx=move[1]-'a';
+	my=move[2]-'1';
 	char * piece = board[cpy][cpx];
 	char * placement = board[my][mx];
 
@@ -331,70 +334,43 @@ void randomNode(LinkedList * l, Node * n) {
 }
 
 void updateLegalMoves(char board[8][8][4], LinkedList * whiteMoves, LinkedList * blackMoves) {
-	int i = 0;
+	int i = 0, cpx = 0, cpy = 0, mx = 0, my = 0;
 	char * curr_place = malloc(sizeof(curr_place) * 3);
 	char * mov_place = malloc(sizeof(mov_place) * 3);
 
 	while(i<64) {
 		if(strcmp(board[i%8][i/8], " ")) {
-			if(strcmp(board[i%8][i/8], "\u2658")) {
+			if(!strcmp(board[i%8][i/8], "\u2658") || !strcmp(board[i%8][i/8], "\u2658")) {
 				for(int j=1;j<3;j++) {
 					for(int k=1;k<3;k++) {
-						curr_place = board[i%8][i/8];
-						mov_place = board[(i%8+k)%8][(i/8+j)%8];
-						if(check_move(board,curr_place,mov_place)){
+//						getMoveSyntax(board,i/8,i%8,(i/8+k)%8,(i%8+j)%8,curr_place,mov_place);
+						printf("curr_place = %s\n",curr_place);
+						printf("mov_place = %s\n",mov_place);
+						if(check_move(board,curr_place,mov_place,cpx,cpy,mx,my) == 1){
+//							printf("knight piece y=%d x=%d my=%d mx=%d", i%8, i/8, (i%8+k)%8, (i/8+j)%8);
 							Node * n = malloc(sizeof(*n));
-							add(whiteMoves,n);
-							break;
+							add(strcmp(board[i%8][i/8], "\u2658") ? whiteMoves : blackMoves, n);
 						}
-						mov_place = board[(i%8+k)%8][(i/8+j)%8];
-						if(check_move(board,curr_place,mov_place)){
+						getMoveSyntax(board,i/8,i%8,(i/8+k)%8,((i%8-j)+8)%8,curr_place,mov_place);
+						printf("mov_place = %s\n",mov_place);
+						if(check_move(board,curr_place,mov_place,cpx,cpy,mx,my) == 1){
+//							printf("knight piece y=%d x=%d my=%d mx=%d", i%8, i/8, (i%8+k)%8, ((i/8-j)+8)%8);
 							Node * n = malloc(sizeof(*n));
-							add(whiteMoves,n);
-							break;
+							add(strcmp(board[i%8][i/8], "\u2658") ? whiteMoves : blackMoves, n);
 						}
-						mov_place = board[(i%8+k)%8][(i/8+j)%8];
-						if(check_move(board,curr_place,mov_place)){
+						getMoveSyntax(board,i/8,i%8,((i/8-k)+8)%8,(i%8+j)%8,curr_place,mov_place);
+						printf("mov_place = %s\n",mov_place);
+						if(check_move(board,curr_place,mov_place,cpx,cpy,mx,my) == 1){
+//							printf("knight piece y=%d x=%d my=%d mx=%d", i%8, i/8, ((i%8-k)+8)%8, ((i/8+j)+8)%8);
 							Node * n = malloc(sizeof(*n));
-							add(whiteMoves,n);
-							break;
+							add(strcmp(board[i%8][i/8], "\u2658") ? whiteMoves : blackMoves, n);
 						}
-						mov_place = board[(i%8+k)%8][(i/8+j)%8];
-						if(check_move(board,curr_place,mov_place)){
+						getMoveSyntax(board,i/8,i%8,((i/8-k)+8)%8,((i%8-j)+8)%8,curr_place,mov_place);
+						printf("mov_place = %s\n",mov_place);
+						if(check_move(board,curr_place,mov_place,cpx,cpy,mx,my) == 1){
+//							printf("knight piece y=%d x=%d my=%d mx=%d", i%8, i/8, ((i%8-k)+8)%8, ((i/8-j)+8)%8);
 							Node * n = malloc(sizeof(*n));
-							add(whiteMoves,n);
-							break;
-						}
-					}
-				}
-			}
-			if(strcmp(board[i%8][i/8], "\u265e")) {
-				for(int j=1;j<3;j++) {
-					for(int k=1;k<3;k++) {
-						curr_place = board[i%8][i/8];
-						mov_place = board[(i%8+k)%8][(i/8+j)%8];
-						if(check_move(board,curr_place,mov_place)){
-							Node * n = malloc(sizeof(*n));
-							add(blackMoves,n);
-							break;
-						}
-						mov_place = board[(i%8+k)%8][(i/8+j)%8];
-						if(check_move(board,curr_place,mov_place)){
-							Node * n = malloc(sizeof(*n));
-							add(blackMoves,n);
-							break;
-						}
-						mov_place = board[(i%8+k)%8][(i/8+j)%8];
-						if(check_move(board,curr_place,mov_place)){
-							Node * n = malloc(sizeof(*n));
-							add(blackMoves,n);
-							break;
-						}
-						mov_place = board[(i%8+k)%8][(i/8+j)%8];
-						if(check_move(board,curr_place,mov_place)){
-							Node * n = malloc(sizeof(*n));
-							add(blackMoves,n);
-							break;
+							add(strcmp(board[i%8][i/8], "\u2658") ? whiteMoves : blackMoves, n);
 						}
 					}
 				}
@@ -405,48 +381,62 @@ void updateLegalMoves(char board[8][8][4], LinkedList * whiteMoves, LinkedList *
 }
 
 //Function that converts a specific piece's placement into Chess's algebraic notation
-void getMoveSyntax(char board[8][8][4], int i, int j, char * move) {
+void getMoveSyntax(char board[8][8][4], int i, int j, int m, int n, char * piece, char * move) {
 
-	if(board[j][i][0]&0xE2 && board[j][i][1]&0x99) {
+	if(i<8 && j <8 && m<8 && n<8 && board[j][i][0]&0xE2 && board[j][i][1]&0x99) {
 		switch(board[j][i][2]) {
 			case (signed char) 0x98:
+				piece[0] = 'N';
 				move[0] = 'N';
 				break;
 			case (signed char) 0x9E:
+				piece[0] = 'N';
 				move[0] = 'N';
 				break;
 			case (signed char) 0x96:
+				piece[0] = 'R';
 				move[0] = 'R';
 				break;
 			case (signed char) 0x9C:
+				piece[0] = 'R';
 				move[0] = 'R';
 				break;
 			case (signed char) 0x97:
+				piece[0] = 'B';
 				move[0] = 'B';
 				break;
 			case (signed char) 0x9D:
+				piece[0] = 'B';
 				move[0] = 'B';
 				break;
 			case (signed char) 0x95:
+				piece[0] = 'Q';
 				move[0] = 'Q';
 				break;
 			case (signed char) 0x9B:
+				piece[0] = 'Q';
 				move[0] = 'Q';
 				break;
 			case (signed char) 0x94:
+				piece[0] = 'K';
 				move[0] = 'K';
 				break;
 			case (signed char) 0x9A:
+				piece[0] = 'K';
 				move[0] = 'K';
 				break;
 			case (signed char) 0x99:
+				piece[0] = 'P';
 				move[0] = 'P';
 				break;
 			case (signed char) 0x9F:
+				piece[0] = 'P';
 				move[0] = 'P';
 				break;
 		}
-		move[1] = i + 'a';
-		move[2] = j + '1';
+		move[1] = j + 'a';
+		piece[1] = n + 'a';
+		move[2] = i + '1';
+		piece[2] = m + '1';
 	}
 }
