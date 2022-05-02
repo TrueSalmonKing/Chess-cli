@@ -44,6 +44,7 @@ int main(int argc, char* argv[argc+1]) {
 	LinkedList * whiteMoves = malloc(sizeof(*whiteMoves));
 	LinkedList * blackMoves = malloc(sizeof(*blackMoves));
 	char * CPU_move = malloc(sizeof(CPU_move)*3);
+	Node * n = malloc(sizeof(*n));
 
 //	memcpy(n1.move,"BAD BAD",7);
 //	memcpy(n2.move,"TOD TOD",7);
@@ -78,7 +79,7 @@ int main(int argc, char* argv[argc+1]) {
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" ","\u265a"," "," "," "," "," "," "}
-			,{" "," "," "," "," "," "," "," "}
+			,{"\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659"}
 			,{" "," "," "," "," "," "," "," "}
 			};
 
@@ -93,10 +94,14 @@ int main(int argc, char* argv[argc+1]) {
 		current_board(board, current_move);
 		printf("\nprevious move: %c%c%c %c %c%c%c \nnext move: ",*current_move,*(current_move+1),*(current_move+2),*(current_move+3),*(current_move+4),*(current_move+5),*(current_move+6));
 		next_move(board,current_move, buff_size);
+		randomNode(blackMoves,&n);
+		printf("RANDOM BLACK NODE: '%s'", n->move);
 		printf("clearing white list\n");
 		clear(whiteMoves->head);
+		whiteMoves->head = NULL;
 		printf("clearing black list\n");
 		clear(blackMoves->head);
+		blackMoves->head = NULL;
 	}
 	return 0;
 
@@ -123,8 +128,8 @@ void current_board(char board[8][8][4], const char* next_move) {
 //Movement validity check function
 void next_move(char board[8][8][4], char* move, size_t buff_size) {
 
-	char * move_1 = malloc(sizeof *move_1 * 3);
-	char * move_2 = malloc(sizeof *move_2 * 3);
+	char * move_1 = malloc(sizeof(*move_1) * 4);
+	char * move_2 = malloc(sizeof(*move_2) * 4);
 	char delim[]=" ";
 	char * piece;
 	char * placement;
@@ -141,26 +146,29 @@ void next_move(char board[8][8][4], char* move, size_t buff_size) {
 		return;
 	}
 //If the user's input is indeed valid we invoke the function check_move
-	if(check_move(board, move_1, move_2, piece, placement)) {
+	if(check_move(board, move_1, move_2, &piece, &placement)) {
 		printf("Valid move !\n");
 		strcpy(placement,piece);
 		strcpy(piece," ");
 	} else
 		printf("Invalid move!!\n");
 
-	free(move_1);
-	free(move_2);
+//Can't free space !! --> ERROR : free(): invalid pointer
+	//free(move_1);
+	//free(move_2);
 }
 
 //next_move merely checks if the user input has two tokens delimeted by a space, check_move then subsequently has to first check the syntax of each
-int check_move(char board[8][8][4], char* curr_place, char* move, char * piece, char * placement) {
+int check_move(char board[8][8][4], char* curr_place, char* move, char ** piece, char ** placement) {
 //each chess piece's position on the horizontal axis (x) and vertical axis (y) are assigned two variables cpx and cpy respectivaly, which are mapped accordingly with [a-h] -> [0-7]. We do the same for the positions of the location the player wants to move the piece to with variables mx and my
 	int cpx=curr_place[1]-'a';
 	int cpy=curr_place[2]-'1';
 	int mx=move[1]-'a';
 	int my=move[2]-'1';
-	piece = board[cpy][cpx];
-	placement = board[my][mx];
+	if(piece)
+		*piece = board[cpy][cpx];
+	if(placement)
+		*placement = board[my][mx];
 
 //a is the horizontal movement vector magnitude, and b is the vertical movement vector magnitude
 	int a=mx-cpx;
@@ -187,51 +195,50 @@ int check_move(char board[8][8][4], char* curr_place, char* move, char * piece, 
 //	( (a&2)&&(b&1) ^ (a&1)&&(b&2) )
 //Knight ches piece has no collision checks, except if the moved to board position isn't empty
 		case 'N':
-			printf("%s %s\n",piece, placement);
-			if((!strcmp(piece,"\u265e") || !strcmp(piece,"\u2658")) && (!((mx)>>3)&&!((my)>>3)) && (((a&2)&&(b&1))^((a&1)&&(b&2))) && colli_handl(piece,placement)) {
+			printf("%s %s\n",board[cpy][cpx], board[my][mx]);
+			if((!strcmp(board[cpy][cpx],"\u265e") || !strcmp(board[cpy][cpx],"\u2658")) && (!((mx)>>3)&&!((my)>>3)) && (((a&2)&&(b&1))^((a&1)&&(b&2))) && colli_handl(board[cpy][cpx],board[my][mx])) {
 				return 1;
 			};
 			return 0;
 //Rook chess piece
-//Knight movement corresponds to movement in only one axis, as such we check for that with !a or !b, we also have to ensure that the traversed lane with the rook piece must be checked in the case where a collision occurs with a piece, we perform this check with the function lane_check
+//Knight movement corresponds to movement in only one axis, as such we check for that with !a or !b, we also have to ensure that the traversed lane with the rook piece must be checked in the case where a collision occurs with a board[cpy][cpx], we perform this check with the function lane_check
 		case 'R':
-			if((!strcmp(piece,"\u265c") || !strcmp(piece,"\u2656")) && (!((mx)>>3)&&!((my)>>3)) && (!a && lane_check(board,cpx,cpy,a,b))^(!b && lane_check(board,cpx,cpy,a,b))) {
+			if((!strcmp(board[cpy][cpx],"\u265c") || !strcmp(board[cpy][cpx],"\u2656")) && (!((mx)>>3)&&!((my)>>3)) && (!a && lane_check(board,cpx,cpy,a,b))^(!b && lane_check(board,cpx,cpy,a,b))) {
 				return 1;
 			};
 			return 0;
 //Bishop chess piece
 //Bishop movement corresponds to same movement magnitude in both axises, as such we check for that with the following:
 //	a<<29 && b<<29
-//Similar to the rook piece, lane_check must be called
+//Similar to the rook board[cpy][cpx], lane_check must be called
 		case 'B':
-			if((!strcmp(piece,"\u265d") || !strcmp(piece,"\u2657")) && (!((mx)>>3)&&!((my)>>3)) && a<<29&b<<29 && lane_check(board,cpx,cpy,a,b)) {
+			if((!strcmp(board[cpy][cpx],"\u265d") || !strcmp(board[cpy][cpx],"\u2657")) && (!((mx)>>3)&&!((my)>>3)) && a<<29&b<<29 && lane_check(board,cpx,cpy,a,b)) {
 				return 1;
 			}
 			return 0;
 //Queen chess piece
 //Queen combines both the logic of Rook and Bishop
 		case 'Q':
-			if((!strcmp(piece,"\u265a") || !strcmp(piece,"\u2654")) && (!((mx)>>3)&&!((my)>>3)) && (a<<29&b<<29 || (!a^!b)) && lane_check(board,cpx,cpy,a,b)) {
+			if((!strcmp(board[cpy][cpx],"\u265a") || !strcmp(board[cpy][cpx],"\u2654")) && (!((mx)>>3)&&!((my)>>3)) && (a<<29&b<<29 || (!a^!b)) && lane_check(board,cpx,cpy,a,b)) {
 				return 1;
 			}
 			return 0;
 //Pawn chess piece
-//Pawn movement corresponds to movement in only one placement in the y-axis (checked using (!a) and !(b-1) if the piece is on the black side, and !(b+1) otherwise), with the possibility of two placements if it's the first movement of the pawn piece and if the placement is empty (checked using (!a), strcmp(board[my][mx]," ") and !(b-2) if the piece is on the black side or !(b+2) otherwise). If the Pawn piece is able to capture an opposing piece then the placement is checked for if it's empty, if not then we confirm that it's indeed an opposing piece (checked using !(a-1)^!(a+1) which works for both colors of pawn pieces, strcmp(board[my][mx]," ") and the same logic using in colli_handl minus the possibility to go to an empty placement)
+//Pawn movement corresponds to movement in only one placement in the y-axis (checked using (!a) and !(b-1) if the piece is on the black side, and !(b+1) otherwise), with the possibility of two placements if it's the first movement of the pawn piece and if the placement is empty (checked using (!a), strcmp(board[my][mx]," ") and !(b-2) if the piece is on the black side or !(b+2) otherwise). If the Pawn piece is able to capture an opposing piece then the placement is checked for if it's empty, if not then we confirm that it's indeed an opposing piece (checked using !(a-1)^!(a+1) which works for both colors of pawn pieces, strcmp(board[my][mx]," ") and the same logic using in colli_handl minus the possibility to go to an empty placement
 		case 'P':
 //Black Pawn case
-			if(!strcmp(piece,"\u265f") && (!((mx)>>3)&&!((my)>>3)) 
-&& ((!(b-2) && !a && !(cpy-1) && !strcmp(placement," ")) || 
-(!(b-1) && (!strcmp(placement," ") ? !a : !(a-1)^!(a+1) && ((piece[2]-0x94)&0xFF)/6 == !(((placement[2]-0x94)&0xFF)/6)))
+			if(!strcmp(board[cpy][cpx],"\u265f") && (!((mx)>>3)&&!((my)>>3)) 
+&& ((!(b-2) && !a && !(cpy-1) && !strcmp(board[my][mx]," ")) || 
+(!(b-1) && (!strcmp(board[my][mx]," ") ? !a : !(a-1)^!(a+1) && ((board[cpy][cpx][2]-0x94)&0xFF)/6 == !(((board[my][mx][2]-0x94)&0xFF)/6)))
 )) {
 				return 1;
 				
 			};
 //White Pawn case
-			if(!strcmp(piece,"\u2659") && (!((mx)>>3)&&!((my)>>3)) 
-&& ((!(b+2) && !a && !(cpy+1) && !strcmp(placement," ")) || 
-(!(b+1) && (!strcmp(placement," ") ? !a : !(a-1)^!(a+1) && ((piece[2]-0x94)&0xFF)/6 == !(((placement[2]-0x94)&0xFF)/6)))
+			if(!strcmp(board[cpy][cpx],"\u2659") && (!((mx)>>3)&&!((my)>>3)) 
+&& ((!(b+2) && !a && !(cpy+1) && !strcmp(board[my][mx]," ")) || 
+(!(b+1) && (!strcmp(board[my][mx]," ") ? !a : !(a-1)^!(a+1) && ((board[cpy][cpx][2]-0x94)&0xFF)/6 == !(((board[my][mx][2]-0x94)&0xFF)/6)))
 )) {
-				printf("WE IN ?");
 				return 1;
 				
 			};
@@ -239,7 +246,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move, char * piece, 
 //King chess piece
 //Allows for movement in any placement with one displacement in each axis
 		case 'K':
-			if((!strcmp(piece,"\u265a") || !strcmp(piece,"\u2654")) && (!((mx)>>3)&&!((my)>>3)) && (!(((a+(a>>31))^(a>>31))>>1)&&!(((b+(b>>31))^(b>>31))>>1)) && colli_handl(piece,placement)) {
+			if((!strcmp(board[cpy][cpx],"\u265a") || !strcmp(board[cpy][cpx],"\u2654")) && (!((mx)>>3)&&!((my)>>3)) && (!(((a+(a>>31))^(a>>31))>>1)&&!(((b+(b>>31))^(b>>31))>>1)) && colli_handl(board[cpy][cpx],board[my][mx])) {
 				return 1;
 				
 			};
@@ -291,16 +298,16 @@ int colli_handl(char p1[4], char p2[4]) {
 
 }
 
-void add(LinkedList * l, char * s) {
+void add(LinkedList * l, char ** s) {
 
-	printf("\n\n\n\nINSIDE ADD");
+	printf("adding %s\n\n", *s);
 	if(!s)
 		return;
 
 	if(!l->head){
 		Node * n = malloc(sizeof(*n));
 		n->next=NULL;
-	printf("EXITING SAFELY ADD");
+		n->move = *s;
 		l->head=n;
 		l->size=1;
 		return;
@@ -309,7 +316,7 @@ void add(LinkedList * l, char * s) {
 	if(!l->head->next){
 		Node * n = malloc(sizeof(*n));
 		n->next=NULL;
-	printf("EXITING SAFELY ADD");
+		n->move = *s;
 		l->head->next=n;
 		l->size=2;
 		return;
@@ -325,11 +332,10 @@ void add(LinkedList * l, char * s) {
 
 	iterator_n->next = n;
 	n->next=NULL;
-
-	printf("EXITING SAFELY ADD");
+	n->move = *s;
 }
 
-void randomNode(LinkedList * l, Node * n) {
+void randomNode(LinkedList * l, Node ** n) {
 
 	if(!l) {
 		printf("Empty list");
@@ -338,6 +344,7 @@ void randomNode(LinkedList * l, Node * n) {
 
 	srand(time(NULL));
 	int r = rand() % l->size;
+	printf("RANDOM VALUE %d !\n",r);
 
 	Node * iterator_n = malloc(sizeof(*iterator_n));
 
@@ -345,11 +352,12 @@ void randomNode(LinkedList * l, Node * n) {
 	int i = 0;
 
 	while(r>i && iterator_n->next) {
+		printf("LOOKING FOR VALUE R=%d AND MOVE=%s !\n",r,iterator_n->move);
 		++i;
 		iterator_n = iterator_n->next;
 	}
 
-	*n=*iterator_n;
+	*n=iterator_n;
 }
 
 void clear(Node * head) {
@@ -357,11 +365,11 @@ void clear(Node * head) {
 	Node * temp = head;	
 
 	while(head){
-		printf("CLEARING LOOOOP!!");
 		temp = head;
 		head = head->next;
 		temp->next=NULL;
 		temp->move=NULL;
+		free(temp->move);
 		free(temp);
 	}
 }
@@ -375,7 +383,7 @@ void updateLegalMoves(char board[8][8][4], LinkedList * whiteMoves, LinkedList *
 		if(strcmp(board[i%8][i/8], " ")) {
 			getMoveSyntax(board,i/8,i%8,curr_place);
 			mov_place[0] = curr_place[0];
-			printf("\n\nPIECE IS %s AND WE GOT CURR PLACE = %s with j=%d\n\n\n",board[i%8][i/8], curr_place,j);
+			//printf("\n\nPIECE IS %s AND WE GOT CURR PLACE = %s with j=%d\n\n\n",board[i%8][i/8], curr_place,j);
 
 			while(j<64) {
 				getMoveSyntax(board,j/8,j%8,mov_place);
@@ -383,9 +391,23 @@ void updateLegalMoves(char board[8][8][4], LinkedList * whiteMoves, LinkedList *
 				mov_place[0] = curr_place[0];
 				//printf("i=%d and j=%d and CURR_PLACE='%s' and MOV_PLACE='%s'\n",i, j, curr_place, mov_place);
 				if((i-j) && check_move(board,curr_place,mov_place, NULL, NULL)) {
-					printf("i=%d and j=%d and CURR_PLACE='%s' and MOV_PLACE='%s'\n",i, j, curr_place, mov_place);
-					printf("TESTING\n");
-					((board[i%8][i/8][2]-0x94)&0xFF)/6 ? add(blackMoves,"") : add(whiteMoves,"");
+					//printf("i=%d and j=%d and CURR_PLACE='%s' and MOV_PLACE='%s'\n",i, j, curr_place, mov_place);
+					//printf("TESTING\n");
+
+					char * move = malloc(sizeof(char*)*8);
+					move[0] = curr_place[0];
+					move[1] = curr_place[1];
+					move[2] = curr_place[2];
+					move[3] = ' ';
+					move[4] = mov_place[0];
+					move[5] = mov_place[1];
+					move[6] = mov_place[2];
+					move[7] = '\0';
+			
+
+					//printf("MOVE = %s\n",move);
+					((board[i%8][i/8][2]-0x94)&0xFF)/6 ? add(blackMoves,&move) : add(whiteMoves,&move);
+				//	printf("ooooooooo");
 				}
 				++j;
 			}
