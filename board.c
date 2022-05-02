@@ -1,5 +1,6 @@
 //To do:
-//Segmentaion fault on legal moves LinkedList clear...
+//Error must be fixed in line 156, relating to freeing the allocated memory for the two strings
+//Set linkedlist head node to null after clearing the list inside the function
 //getMoveSyntax redundancy must be checked!
 //updateLegalMoves function's logic must be corrected and updated
 //board display function must be updated --> unused argument next_move
@@ -25,6 +26,7 @@
 //Queen movement
 //Initial Pawn movement
 //King movement
+//Segmentaion fault on legal moves LinkedList clear...
 
 
 #include <stdio.h>
