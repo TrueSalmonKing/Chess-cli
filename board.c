@@ -1,4 +1,5 @@
 //To do:
+//Checkmate check during each move's attempt
 //Error must be fixed in line 156, relating to freeing the allocated memory for the two strings
 //Set linkedlist head node to null after clearing the list inside the function
 //getMoveSyntax redundancy must be checked!
@@ -111,7 +112,7 @@ int main(int argc, char* argv[argc+1]) {
 
 //Board printing function
 void current_board(char board[8][8][4], const char* next_move) {
-	printf(" _a_b_c_d_e_f_g_h\n");
+	printf("\n _a_b_c_d_e_f_g_h\n");
 	for(size_t i=0;i<8;i++){
 		printf("%lu|",i+1);
 		for(size_t j=0;j<8;j++){
@@ -226,7 +227,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move, char ** piece,
 			}
 			return 0;
 //Pawn chess piece
-//Pawn movement corresponds to movement in only one placement in the y-axis (checked using (!a) and !(b-1) if the piece is on the black side, and !(b+1) otherwise), with the possibility of two placements if it's the first movement of the pawn piece and if the placement is empty (checked using (!a), strcmp(board[my][mx]," ") and !(b-2) if the piece is on the black side or !(b+2) otherwise). If the Pawn piece is able to capture an opposing piece then the placement is checked for if it's empty, if not then we confirm that it's indeed an opposing piece (checked using !(a-1)^!(a+1) which works for both colors of pawn pieces, strcmp(board[my][mx]," ") and the same logic using in colli_handl minus the possibility to go to an empty placement
+//Pawn movement corresponds to movement in only one placement in the y-axis (checked using (!a) and !(b-1) if the piece is on the black side, and !(b+1) otherwise), with the possibility of two placements if it's the first movement of the pawn piece (chcked using (cpy-1) for black pieces and (cpy-6) for the white pawn pieces) and if the placement is empty (checked using (!a), strcmp(board[my][mx]," ") and !(b-2) if the piece is on the black side or !(b+2) otherwise). If the Pawn piece is able to capture an opposing piece then the placement is checked for if it's empty, if not then we confirm that it's indeed an opposing piece (checked using !(a-1)^!(a+1) which works for both colors of pawn pieces, strcmp(board[my][mx]," ") and the same logic using in colli_handl minus the possibility to go to an empty placement
 		case 'P':
 //Black Pawn case
 			if(!strcmp(board[cpy][cpx],"\u265f") && (!((mx)>>3)&&!((my)>>3)) 
@@ -238,7 +239,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move, char ** piece,
 			};
 //White Pawn case
 			if(!strcmp(board[cpy][cpx],"\u2659") && (!((mx)>>3)&&!((my)>>3)) 
-&& ((!(b+2) && !a && !(cpy+1) && !strcmp(board[my][mx]," ")) || 
+&& ((!(b+2) && !a && !(cpy-6) && !strcmp(board[my][mx]," ")) || 
 (!(b+1) && (!strcmp(board[my][mx]," ") ? !a : !(a-1)^!(a+1) && ((board[cpy][cpx][2]-0x94)&0xFF)/6 == !(((board[my][mx][2]-0x94)&0xFF)/6)))
 )) {
 				return 1;
@@ -302,7 +303,7 @@ int colli_handl(char p1[4], char p2[4]) {
 
 void add(LinkedList * l, char ** s) {
 
-	printf("adding %s\n\n", *s);
+	//printf("adding %s\n\n", *s);
 	if(!s)
 		return;
 
@@ -391,9 +392,9 @@ void updateLegalMoves(char board[8][8][4], LinkedList * whiteMoves, LinkedList *
 				getMoveSyntax(board,j/8,j%8,mov_place);
 //ISSUE MUST BE LOOKED INTO --> CALLING getMoveSyntax resets the mov_place[0] to the previous piece's value (from K to P)
 				mov_place[0] = curr_place[0];
-				//printf("i=%d and j=%d and CURR_PLACE='%s' and MOV_PLACE='%s'\n",i, j, curr_place, mov_place);
+				//printf("i=%d and j=%d and CURR_PLACE='%s' and MOV_PLACE='%s' and check_move value is %d\n",i, j, curr_place, mov_place, check_move(board,curr_place,mov_place, NULL, NULL));
 				if((i-j) && check_move(board,curr_place,mov_place, NULL, NULL)) {
-					//printf("i=%d and j=%d and CURR_PLACE='%s' and MOV_PLACE='%s'\n",i, j, curr_place, mov_place);
+					printf("i=%d and j=%d and CURR_PLACE='%s' and MOV_PLACE='%s'\n",i, j, curr_place, mov_place);
 					//printf("TESTING\n");
 
 					char * move = malloc(sizeof(char*)*8);
