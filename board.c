@@ -1,10 +1,8 @@
 //To do:
 //Checkmate check during each move's attempt
-//Error must be fixed in line 156, relating to freeing the allocated memory for the two strings
-//Set linkedlist head node to null after clearing the list inside the function
+//Error must be fixed in line 159, relating to freeing the allocated memory for the two strings
 //getMoveSyntax redundancy must be checked!
 //updateLegalMoves function's logic must be corrected and updated
-//board display function must be updated --> unused argument next_move
 //Pawn piece conversion
 //Pawn En Passant movement
 //Regex check must be added to parsed movements
@@ -28,6 +26,8 @@
 //Initial Pawn movement
 //King movement
 //Segmentaion fault on legal moves LinkedList clear...
+//Set linkedlist head node to null after clearing the list inside the function
+//board display function must be updated --> unused argument next_move
 
 
 #include <stdio.h>
@@ -94,24 +94,22 @@ int main(int argc, char* argv[argc+1]) {
 	while(1) {
 		updateLegalMoves(board,whiteMoves,blackMoves);
 		printf("Possible moves for black = %d, Possible moves for white = %d", blackMoves->size, whiteMoves->size);
-		current_board(board, current_move);
+		current_board(board);
 		printf("\nprevious move: %c%c%c %c %c%c%c \nnext move: ",*current_move,*(current_move+1),*(current_move+2),*(current_move+3),*(current_move+4),*(current_move+5),*(current_move+6));
 		next_move(board,current_move, buff_size);
 		randomNode(blackMoves,&n);
 		printf("RANDOM BLACK NODE: '%s'", n->move);
 		printf("clearing white list\n");
-		clear(whiteMoves->head);
-		whiteMoves->head = NULL;
+		clear(&whiteMoves->head);
 		printf("clearing black list\n");
-		clear(blackMoves->head);
-		blackMoves->head = NULL;
+		clear(&blackMoves->head);
 	}
 	return 0;
 
 }
 
 //Board printing function
-void current_board(char board[8][8][4], const char* next_move) {
+void current_board(char board[8][8][4]) {
 	printf("\n _a_b_c_d_e_f_g_h\n");
 	for(size_t i=0;i<8;i++){
 		printf("%lu|",i+1);
@@ -363,18 +361,20 @@ void randomNode(LinkedList * l, Node ** n) {
 	*n=iterator_n;
 }
 
-void clear(Node * head) {
+void clear(Node ** head) {
 
-	Node * temp = head;	
+	Node * temp = *head;	
 
-	while(head){
-		temp = head;
-		head = head->next;
+	while(*head){
+		temp = *head;
+		*head = (*head)->next;
 		temp->next=NULL;
 		temp->move=NULL;
 		free(temp->move);
 		free(temp);
 	}
+
+	*head = NULL;
 }
 
 void updateLegalMoves(char board[8][8][4], LinkedList * whiteMoves, LinkedList * blackMoves) {
