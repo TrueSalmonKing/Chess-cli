@@ -3,7 +3,6 @@
 //Error must be fixed in line 159, relating to freeing the allocated memory for the two strings
 //getMoveSyntax redundancy must be checked!
 //updateLegalMoves function's logic must be corrected and updated
-//Pawn piece conversion
 //Pawn En Passant movement
 //Regex check must be added to parsed movements
 //Co-op playstyle implementation
@@ -28,6 +27,7 @@
 //Segmentaion fault on legal moves LinkedList clear...
 //Set linkedlist head node to null after clearing the list inside the function
 //board display function must be updated --> unused argument next_move
+//Pawn piece conversion
 
 
 #include <stdio.h>
@@ -151,6 +151,7 @@ void next_move(char board[8][8][4], char* move, size_t buff_size) {
 		printf("Valid move !\n");
 		strcpy(placement,piece);
 		strcpy(piece," ");
+		pawn_promotion(board, (move_2[2]-'1') + (move_2[1]-'a')*8);
 	} else
 		printf("Invalid move!!\n");
 
@@ -297,6 +298,37 @@ int colli_handl(char p1[4], char p2[4]) {
 //if differing pieces' collision occurs --> 1 is returned
 	return !strcmp(p1," ") ^ !strcmp(p2, " ") ? 1 : ((p1[2]-0x94)&0xFF)/6 == !(((p2[2]-0x94)&0xFF)/6);
 
+}
+
+void pawn_promotion(char board[8][8][4], int pos) {
+
+	if(!(pos%8) && !strcmp(board[pos%8][pos/8], "\u2659") || !((pos+1)%8) && !strcmp(board[pos%8][pos/8] ,"\u265f")){
+		char * promotion_target = malloc(2);
+		char delim[]=" ";
+		size_t buff_size = 1;
+
+		printf("To which piece should the pawn in %c%c be promoted?\nQ : queen\nR : rook\nB : bishop\nK : knight\n",(pos/8 + 'a'), (pos%8+'1'));
+
+		//User's input is parsed to get the piece's current position and the desired location to move into
+		getline(&promotion_target,&buff_size,stdin);
+		switch(*promotion_target) {
+			case 'Q':
+				board[pos%8][pos/8][2] = board[pos%8][pos/8][2] - 4;
+				break;
+			case 'R':
+				board[pos%8][pos/8][2] = board[pos%8][pos/8][2] - 3;
+				break;
+			case 'B':
+				board[pos%8][pos/8][2] = board[pos%8][pos/8][2] - 2;
+				break;
+			case 'K':
+				board[pos%8][pos/8][2] = board[pos%8][pos/8][2] - 1;
+				break;
+		}
+		
+
+		free(promotion_target);
+	}
 }
 
 void add(LinkedList * l, char ** s) {
