@@ -24,7 +24,7 @@
 //Queen movement
 //Initial Pawn movement
 //King movement
-//Segmentaion fault on legal moves LinkedList clear...
+//Segmentaion fault on egal moves LinkedList clear...
 //Set linkedlist head node to null after clearing the list inside the function
 //board display function must be updated --> unused argument next_move
 //Pawn piece conversion
@@ -76,13 +76,13 @@ int main(int argc, char* argv[argc+1]) {
 			};
 
 	char board[8][8][4]={
-			{" "," "," "," "," "," "," "," "}
-			,{"\u265f","\u265f","\u265f","\u265f","\u265f","\u265f","\u265f","\u265f"}
+			{" "," "," ","\u265d"," "," "," ",""}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
-			,{" ","\u265a"," "," "," "," "," "," "}
-			,{"\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659"}
+			,{" "," "," "," "," "," "," "," "}
+			,{" "," "," "," "," "," "," "," "}
+			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			};
 
@@ -211,10 +211,11 @@ int check_move(char board[8][8][4], char* curr_place, char* move, char ** piece,
 			return 0;
 //Bishop chess piece
 //Bishop movement corresponds to same movement magnitude in both axises, as such we check for that with the following:
-//	a<<29 && b<<29
+//	(!(a-b) || !(a+b))
 //Similar to the rook board[cpy][cpx], lane_check must be called
 		case 'B':
-			if((!strcmp(board[cpy][cpx],"\u265d") || !strcmp(board[cpy][cpx],"\u2657")) && (!((mx)>>3)&&!((my)>>3)) && a<<29&b<<29 && lane_check(board,cpx,cpy,a,b)) {
+			//printf("a=%d, b=%d\n",a,b);
+			if((!strcmp(board[cpy][cpx],"\u265d") || !strcmp(board[cpy][cpx],"\u2657")) && (!((mx)>>3)&&!((my)>>3)) && (!(a-b) || !(a+b)) && lane_check(board,cpx,cpy,a,b)) {
 				return 1;
 			}
 			return 0;
@@ -265,20 +266,20 @@ int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY) {
 	int i=0, j=0, k=0, si, sj, x, y;
 	int maskX = (mX>>31);
 	int maskY = (mY>>31);
-	printf("mX= %d, iter= %d, X=%d\n", mX, iter);
-	printf("CASE 2\n\n\n");
+	//printf("mX= %d, iter= %d, X=%d\n", mX, iter);
+	//printf("CASE 2\n\n\n");
 	y = (((mX+maskX)^maskX) - ((mY+maskY)^maskY))>>31 ? mY : mX;
 	si = !mX ? 0 : maskX ? -1 : 1;
 	sj = !mY ? 0 : maskY ? -1 : 1;
 	x = !y ? 0 : (y>>31) ? -1 : 1;
-	printf("\n\n IWJEFLWEFLWE y=%d, si=%d, sj=%d, x=%d\n\n", y,si,sj,x);
+	//printf("\n\n IWJEFLWEFLWE y=%d, si=%d, sj=%d, x=%d\n\n", y,si,sj,x);
 
 	do{
 		i+=si;
 		j+=sj;
 		k+=x;
-		printf("mX=%d, mY=%d\n", mX, mY);
-		printf("cpy=%d, cpx=%d, %s\n", cpy+j, cpx+i, board[cpy+j][cpx+i]);
+		//printf("mX=%d, mY=%d\n", mX, mY);
+		//printf("cpy=%d, cpx=%d, %s\n", cpy+j, cpx+i, board[cpy+j][cpx+i]);
 		if(!strcmp(board[cpy+j][cpx+i]," "))
 			printf("empty");
 		else {
@@ -419,7 +420,7 @@ void updateLegalMoves(char board[8][8][4], LinkedList * whiteMoves, LinkedList *
 		if(strcmp(board[i%8][i/8], " ")) {
 			getMoveSyntax(board,i/8,i%8,curr_place);
 			mov_place[0] = curr_place[0];
-			//printf("\n\nPIECE IS %s AND WE GOT CURR PLACE = %s with j=%d\n\n\n",board[i%8][i/8], curr_place,j);
+			printf("\n\nPIECE IS %s AND WE GOT CURR PLACE = %s with j=%d\n\n\n",board[i%8][i/8], curr_place,j);
 
 			while(j<64) {
 				getMoveSyntax(board,j/8,j%8,mov_place);
@@ -443,6 +444,7 @@ void updateLegalMoves(char board[8][8][4], LinkedList * whiteMoves, LinkedList *
 
 					//printf("MOVE = %s\n",move);
 					((board[i%8][i/8][2]-0x94)&0xFF)/6 ? add(blackMoves,&move) : add(whiteMoves,&move);
+					printf("ADDED %s", move);
 				//	printf("ooooooooo");
 				}
 				++j;
