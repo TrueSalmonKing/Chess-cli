@@ -311,6 +311,7 @@ void pawn_promotion(char board[8][8][4], int pos) {
 
 		//User's input is parsed to get the piece's current position and the desired location to move into
 		getline(&promotion_target,&buff_size,stdin);
+		//Both black and white chess pieces have the same order of pieces with respect to their unicode byte representation (E2999F, E2999E, E2999D, E2999C, E2999B and E2999A for black pawn, knight, bishop, rook and queen respectively. E29999...E29994 for white pawn, knight, bishop, rook and queen respectively), as such we can promote to other pieces simply by decrementing the last byte value
 		switch(*promotion_target) {
 			case 'Q':
 				board[pos%8][pos/8][2] = board[pos%8][pos/8][2] - 4;
