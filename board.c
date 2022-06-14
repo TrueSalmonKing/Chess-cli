@@ -76,7 +76,7 @@ int main(int argc, char* argv[argc+1]) {
 			};
 
 	char board[8][8][4]={
-			{" "," "," ","\u265d"," "," "," ",""}
+			{" "," "," ","\u265e"," "," "," ",""}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
@@ -194,11 +194,14 @@ int check_move(char board[8][8][4], char* curr_place, char* move, char ** piece,
 	switch (move[0]) {
 //Knight chess piece
 //Knight movement corresponds to one move in one axis, with two moves in the other axis, as such we check for this in the following bitwise operation:
-//	( (a&2)&&(b&1) ^ (a&1)&&(b&2) )
+//	( !(a^2)&&!(b^1) ^ !(a^1)&&!(b^2) )
+//After we return the absolute value of both movement values a and b
 //Knight ches piece has no collision checks, except if the moved to board position isn't empty
 		case 'N':
+			a = ((a+(a>>31))^(a>>31));
+			b = ((b+(b>>31))^(b>>31));
 			printf("%s %s\n",board[cpy][cpx], board[my][mx]);
-			if((!strcmp(board[cpy][cpx],"\u265e") || !strcmp(board[cpy][cpx],"\u2658")) && (!((mx)>>3)&&!((my)>>3)) && (((a&2)&&(b&1))^((a&1)&&(b&2))) && colli_handl(board[cpy][cpx],board[my][mx])) {
+			if((!strcmp(board[cpy][cpx],"\u265e") || !strcmp(board[cpy][cpx],"\u2658")) && (!((mx)>>3)&&!((my)>>3)) && ((!(a^2)&&!(b^1))^(!(a^1)&&!(b^2))) && colli_handl(board[cpy][cpx],board[my][mx])) {
 				return 1;
 			};
 			return 0;
