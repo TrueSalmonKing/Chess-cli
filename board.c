@@ -1,8 +1,6 @@
 //To do:
 //Checkmate check during each move's attempt
 //Error must be fixed in line 159, relating to freeing the allocated memory for the two strings
-//getMoveSyntax redundancy must be checked!
-//updateLegalMoves function's logic must be corrected and updated
 //Pawn En Passant movement
 //Regex check must be added to parsed movements
 //Co-op playstyle implementation
@@ -28,6 +26,8 @@
 //Set linkedlist head node to null after clearing the list inside the function
 //board display function must be updated --> unused argument next_move
 //Pawn piece conversion
+//updateLegalMoves function's logic must be corrected and updated
+//getMoveSyntax redundancy must be checked! (Switch case redudancy unable to be reduced further)
 
 
 #include <stdio.h>
@@ -64,7 +64,7 @@ int main(int argc, char* argv[argc+1]) {
 //	randomNode(l,&n6);
 //	printf("random node = \"%s\"\n",n6.move);
 
-	char board[8][8][4]={
+	char board_temp[8][8][4]={
 			{"\u265c","\u265e","\u265d","\u265b","\u265a","\u265d","\u265e","\u265c"}
 			,{"\u265f","\u265f","\u265f","\u265f","\u265f","\u265f","\u265f","\u265f"}
 			,{" "," "," "," "," "," "," "," "}
@@ -75,14 +75,14 @@ int main(int argc, char* argv[argc+1]) {
 			,{"\u2656","\u2658","\u2657","\u2655","\u2654","\u2657","\u2658","\u2656"}
 			};
 
-	char board_temp[8][8][4]={
-			{" "," "," ","\u265b"," "," "," "," "}
+	char board[8][8][4]={
+			{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
-			,{" "," "," "," "," "," "," "," "}
+			,{" "," "," ","\u265f"," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			};
 
