@@ -64,19 +64,19 @@ int main(int argc, char* argv[argc+1]) {
 //	randomNode(l,&n6);
 //	printf("random node = \"%s\"\n",n6.move);
 
-	char board_temp[8][8][4]={
+	char board[8][8][4]={
 			{"\u265c","\u265e","\u265d","\u265b","\u265a","\u265d","\u265e","\u265c"}
 			,{"\u265f","\u265f","\u265f","\u265f","\u265f","\u265f","\u265f","\u265f"}
 			,{" "," "," "," "," "," "," "," "}
-			,{" ","\u265a"," "," "," "," "," "," "}
-			,{" ","\u2659","\u2659"," "," "," "," "," "}
+			,{" "," "," "," "," "," "," "," "}
+			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{"\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659","\u2659"}
 			,{"\u2656","\u2658","\u2657","\u2655","\u2654","\u2657","\u2658","\u2656"}
 			};
 
-	char board[8][8][4]={
-			{" "," "," ","\u265e"," "," "," ",""}
+	char board_temp[8][8][4]={
+			{" "," "," ","\u265b"," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
@@ -225,7 +225,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move, char ** piece,
 //Queen chess piece
 //Queen combines both the logic of Rook and Bishop
 		case 'Q':
-			if((!strcmp(board[cpy][cpx],"\u265a") || !strcmp(board[cpy][cpx],"\u2654")) && (!((mx)>>3)&&!((my)>>3)) && (a<<29&b<<29 || (!a^!b)) && lane_check(board,cpx,cpy,a,b)) {
+			if((!strcmp(board[cpy][cpx],"\u265b") || !strcmp(board[cpy][cpx],"\u2655")) && (!((mx)>>3)&&!((my)>>3)) && ((!(a-b) || !(a+b)) && lane_check(board,cpx,cpy,a,b) || (!a && lane_check(board,cpx,cpy,a,b))^(!b && lane_check(board,cpx,cpy,a,b)))) {
 				return 1;
 			}
 			return 0;
