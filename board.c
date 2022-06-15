@@ -1,10 +1,8 @@
 //To do:
 //Checkmate check during each move's attempt
-//Error must be fixed in line 159, relating to freeing the allocated memory for the two strings
 //Pawn En Passant movement
 //Regex check must be added to parsed movements
-//Co-op playstyle implementation
-//Timer + Turns
+//Co-op playstyle implementation (Timer + Checkmate + Stalemate + Win/Lose/Draw + Replay)
 //AI Implementation
 //Handle Exceptions --> INVALID MOVE + TIMER RAN OUT + REGEX ERRORS
 //
@@ -28,6 +26,8 @@
 //Pawn piece conversion
 //updateLegalMoves function's logic must be corrected and updated
 //getMoveSyntax redundancy must be checked! (Switch case redudancy unable to be reduced further)
+//Co-op playstyle barebones implementation (turns)
+//Error must be fixed in last two lines in next_move(), relating to freeing the allocated memory for the two strings (Can't free space !! --> ERROR : free(): invalid pointer)
 
 
 #include <stdio.h>
@@ -64,7 +64,7 @@ int main(int argc, char* argv[argc+1]) {
 //	randomNode(l,&n6);
 //	printf("random node = \"%s\"\n",n6.move);
 
-	char board_temp[8][8][4]={
+	char board[8][8][4]={
 			{"\u265c","\u265e","\u265d","\u265b","\u265a","\u265d","\u265e","\u265c"}
 			,{"\u265f","\u265f","\u265f","\u265f","\u265f","\u265f","\u265f","\u265f"}
 			,{" "," "," "," "," "," "," "," "}
@@ -75,28 +75,30 @@ int main(int argc, char* argv[argc+1]) {
 			,{"\u2656","\u2658","\u2657","\u2655","\u2654","\u2657","\u2658","\u2656"}
 			};
 
-	char board[8][8][4]={
-			{" "," "," "," "," "," "," "," "}
+	char board_temp[8][8][4]={
+			{"\u265c","\u265e","\u265d","\u265b","\u265a","\u265d","\u265e","\u265c"}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
-			,{" "," "," ","\u265f"," "," "," "," "}
-			,{" "," "," "," "," "," "," "," "}
+			,{" "," "," ","\u265a"," "," "," "," "}
+			,{"\u2656","\u2658","\u2657","\u2655","\u2654","\u2657","\u2658","\u2656"}
 			};
 
 //Buffer size set to 7 (movements are in the following syntax [Axi Byj]
 	size_t buff_size=7;
 	char * current_move=(char *)malloc(sizeof(char)*buff_size);
+	char color[2][6] = {"white", "black"};
+	short i = 0;
 
 //Main program loop
 	while(1) {
 		updateLegalMoves(board,whiteMoves,blackMoves);
 		printf("Possible moves for black = %d, Possible moves for white = %d", blackMoves->size, whiteMoves->size);
+		printf("\n%s's turn previous move: %c%c%c %c %c%c%c \nnext move: ",color[i],*current_move,*(current_move+1),*(current_move+2),*(current_move+3),*(current_move+4),*(current_move+5),*(current_move+6));
 		current_board(board);
-		printf("\nprevious move: %c%c%c %c %c%c%c \nnext move: ",*current_move,*(current_move+1),*(current_move+2),*(current_move+3),*(current_move+4),*(current_move+5),*(current_move+6));
-		next_move(board,current_move, buff_size);
+		i = next_move(board,current_move, buff_size, i) ? (i+1)%2 : i;
 		randomNode(blackMoves,&n);
 		printf("RANDOM BLACK NODE: '%s'", n->move);
 		printf("clearing white list\n");
@@ -127,7 +129,8 @@ void current_board(char board[8][8][4]) {
 
 
 //Movement validity check function
-void next_move(char board[8][8][4], char* move, size_t buff_size) {
+//Return 1 if a piece has been moved
+int next_move(char board[8][8][4], char* move, size_t buff_size, short curr_player) {
 
 	char * move_1 = malloc(sizeof(*move_1) * 4);
 	char * move_2 = malloc(sizeof(*move_2) * 4);
@@ -140,24 +143,25 @@ void next_move(char board[8][8][4], char* move, size_t buff_size) {
 	
 	move_1=strtok(move,delim);
 	move_2=strtok(NULL,delim);
-
 //Input invalid in the case where no second move can be parsed from the input (e.g no space between the two movements)
 	if(move_2 == NULL){
 		printf("Invalid move !\n");
-		return;
+		return 0;
 	}
 //If the user's input is indeed valid we invoke the function check_move
-	if(check_move(board, move_1, move_2, &piece, &placement)) {
+//We also verify that the current moving piece indeed has the turn to move by a simple xor of the last byte of the chess piece's unicode representation (it ranges from 0x93 to 0x
+	if(check_move(board, move_1, move_2, &piece, &placement) && ((((board[move_1[2]-'1'][move_1[1]-'a'][2]-0x94)&0xFF)/6)^curr_player) ) {
 		printf("Valid move !\n");
 		strcpy(placement,piece);
 		strcpy(piece," ");
 		pawn_promotion(board, (move_2[2]-'1') + (move_2[1]-'a')*8);
+		return 1;
 	} else
 		printf("Invalid move!!\n");
+		return 0;
 
-//Can't free space !! --> ERROR : free(): invalid pointer
-	//free(move_1);
-	//free(move_2);
+	free(move_1);
+	free(move_2);
 }
 
 //next_move merely checks if the user input has two tokens delimeted by a space, check_move then subsequently has to first check the syntax of each
@@ -200,7 +204,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move, char ** piece,
 		case 'N':
 			a = ((a+(a>>31))^(a>>31));
 			b = ((b+(b>>31))^(b>>31));
-			printf("%s %s\n",board[cpy][cpx], board[my][mx]);
+			//printf("%s %s\n",board[cpy][cpx], board[my][mx]);
 			if((!strcmp(board[cpy][cpx],"\u265e") || !strcmp(board[cpy][cpx],"\u2658")) && (!((mx)>>3)&&!((my)>>3)) && ((!(a^2)&&!(b^1))^(!(a^1)&&!(b^2))) && colli_handl(board[cpy][cpx],board[my][mx])) {
 				return 1;
 			};
@@ -231,11 +235,18 @@ int check_move(char board[8][8][4], char* curr_place, char* move, char ** piece,
 			return 0;
 //Pawn chess piece
 //Pawn movement corresponds to movement in only one placement in the y-axis (checked using (!a) and !(b-1) if the piece is on the black side, and !(b+1) otherwise), with the possibility of two placements if it's the first movement of the pawn piece (chcked using (cpy-1) for black pieces and (cpy-6) for the white pawn pieces) and if the placement is empty (checked using (!a), strcmp(board[my][mx]," ") and !(b-2) if the piece is on the black side or !(b+2) otherwise). If the Pawn piece is able to capture an opposing piece then the placement is checked for if it's empty, if not then we confirm that it's indeed an opposing piece (checked using !(a-1)^!(a+1) which works for both colors of pawn pieces, strcmp(board[my][mx]," ") and the same logic using in colli_handl minus the possibility to go to an empty placement
+//For the pawn's last logical expression, it the same one used below in colli_handl
+//In this case it is used to account for the case where a pawn is attempting to capture an opposing piece ---|
+//											  		     |
+//											  		     |
+//											  		     V
+//First we compare if its third hex value is larger than 0x93 (smallest chess piece is E2 99 94) and we divide by 6, as the smallest black chess piece has value E2 99 9A (9A - 94 = 6), to check whether it is a black or white piece, we proceed to get the bit value of its range (0 if white, 1 if black) and we XOR it to the value get from the same operation done on the second piece
+//if differing pieces' collide --> 1 is returned, signaling that the movement is valid, and this allows the pawn to capture an opposing piece
 		case 'P':
 //Black Pawn case
 			if(!strcmp(board[cpy][cpx],"\u265f") && (!((mx)>>3)&&!((my)>>3)) 
 && ((!(b-2) && !a && !(cpy-1) && !strcmp(board[my][mx]," ")) || 
-(!(b-1) && (!strcmp(board[my][mx]," ") ? !a : !(a-1)^!(a+1) && ((board[cpy][cpx][2]-0x94)&0xFF)/6 == !(((board[my][mx][2]-0x94)&0xFF)/6)))
+(!(b-1) && (!strcmp(board[my][mx]," ") ? !a : !(a-1)^!(a+1) && ((board[cpy][cpx][2]-0x94)&0xFF)/6 ^ (((board[my][mx][2]-0x94)&0xFF)/6)))
 )) {
 				return 1;
 				
@@ -243,7 +254,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move, char ** piece,
 //White Pawn case
 			if(!strcmp(board[cpy][cpx],"\u2659") && (!((mx)>>3)&&!((my)>>3)) 
 && ((!(b+2) && !a && !(cpy-6) && !strcmp(board[my][mx]," ")) || 
-(!(b+1) && (!strcmp(board[my][mx]," ") ? !a : !(a-1)^!(a+1) && ((board[cpy][cpx][2]-0x94)&0xFF)/6 == !(((board[my][mx][2]-0x94)&0xFF)/6)))
+(!(b+1) && (!strcmp(board[my][mx]," ") ? !a : !(a-1)^!(a+1) && ((board[cpy][cpx][2]-0x94)&0xFF)/6 ^ (((board[my][mx][2]-0x94)&0xFF)/6)))
 )) {
 				return 1;
 				
@@ -283,12 +294,12 @@ int lane_check(char board[8][8][4], int cpx, int cpy, int mX, int mY) {
 		k+=x;
 		//printf("mX=%d, mY=%d\n", mX, mY);
 		//printf("cpy=%d, cpx=%d, %s\n", cpy+j, cpx+i, board[cpy+j][cpx+i]);
-		if(!strcmp(board[cpy+j][cpx+i]," "))
-			printf("empty");
-		else {
-			printf("Collision !\n");
+		if(strcmp(board[cpy+j][cpx+i]," "))
+			//printf("empty");
+		//else {
+			//printf("Collision !\n");
 			return y-k ? 0 : colli_handl(board[cpy][cpx], board[cpy+j][cpx+i]);
-		}
+	//	}
 	} while(y-k);
 
 	return 1;
@@ -298,9 +309,9 @@ int colli_handl(char p1[4], char p2[4]) {
 
 //colli_handl only gets called if the board piece ISN'T a space
 //UPDATED LOGIC TO ACCOUNT FOR EMPTY PLACEMENTS = the first check is to ensure that the knight movement is able have a collision check as well. A simple xor to ensure that the knight piece is able to move when no piece is on the targeted placement
-//first we compare if its third hex value is larger than 0x93 (smallest chess piece is E2 99 94) and we divide by 6, as the smallest black chess piece has value E2 99 9A (9A - 94 = 6), to check whether it is a black of white piece, we proceed to get the bit value of its range (0 if white, 1 if black) and we XNOR it to the value get from the same operation done on the second piece
+//first we compare if its third hex value is larger than 0x93 (smallest chess piece is E2 99 94) and we divide by 6, as the smallest black chess piece has value E2 99 9A (9A - 94 = 6), to check whether it is a black or white piece, we proceed to get the bit value of its range (0 if white, 1 if black) and we XOR it to the value get from the same operation done on the second piece
 //if differing pieces' collision occurs --> 1 is returned
-	return !strcmp(p1," ") ^ !strcmp(p2, " ") ? 1 : ((p1[2]-0x94)&0xFF)/6 == !(((p2[2]-0x94)&0xFF)/6);
+	return !strcmp(p1," ") ^ !strcmp(p2, " ") ? 1 : ((p1[2]-0x94)&0xFF)/6 ^ (((p2[2]-0x94)&0xFF)/6);
 
 }
 
@@ -376,13 +387,13 @@ void add(LinkedList * l, char ** s) {
 void randomNode(LinkedList * l, Node ** n) {
 
 	if(!l) {
-		printf("Empty list");
+		//printf("Empty list");
 		return;
 	}
 
 	srand(time(NULL));
 	int r = rand() % l->size;
-	printf("RANDOM VALUE %d !\n",r);
+	//printf("RANDOM VALUE %d !\n",r);
 
 	Node * iterator_n = malloc(sizeof(*iterator_n));
 
@@ -390,7 +401,7 @@ void randomNode(LinkedList * l, Node ** n) {
 	int i = 0;
 
 	while(r>i && iterator_n->next) {
-		printf("LOOKING FOR VALUE R=%d AND MOVE=%s !\n",r,iterator_n->move);
+		//printf("LOOKING FOR VALUE R=%d AND MOVE=%s !\n",r,iterator_n->move);
 		++i;
 		iterator_n = iterator_n->next;
 	}
@@ -423,7 +434,7 @@ void updateLegalMoves(char board[8][8][4], LinkedList * whiteMoves, LinkedList *
 		if(strcmp(board[i%8][i/8], " ")) {
 			getMoveSyntax(board,i/8,i%8,curr_place);
 			mov_place[0] = curr_place[0];
-			printf("\n\nPIECE IS %s AND WE GOT CURR PLACE = %s with j=%d\n\n\n",board[i%8][i/8], curr_place,j);
+			//printf("\n\nPIECE IS %s AND WE GOT CURR PLACE = %s with j=%d\n\n\n",board[i%8][i/8], curr_place,j);
 
 			while(j<64) {
 				getMoveSyntax(board,j/8,j%8,mov_place);
@@ -431,7 +442,7 @@ void updateLegalMoves(char board[8][8][4], LinkedList * whiteMoves, LinkedList *
 				mov_place[0] = curr_place[0];
 				//printf("i=%d and j=%d and CURR_PLACE='%s' and MOV_PLACE='%s' and check_move value is %d\n",i, j, curr_place, mov_place, check_move(board,curr_place,mov_place, NULL, NULL));
 				if((i-j) && check_move(board,curr_place,mov_place, NULL, NULL)) {
-					printf("i=%d and j=%d and CURR_PLACE='%s' and MOV_PLACE='%s'\n",i, j, curr_place, mov_place);
+					//printf("i=%d and j=%d and CURR_PLACE='%s' and MOV_PLACE='%s'\n",i, j, curr_place, mov_place);
 					//printf("TESTING\n");
 
 					char * move = malloc(sizeof(char*)*8);
@@ -447,7 +458,7 @@ void updateLegalMoves(char board[8][8][4], LinkedList * whiteMoves, LinkedList *
 
 					//printf("MOVE = %s\n",move);
 					((board[i%8][i/8][2]-0x94)&0xFF)/6 ? add(blackMoves,&move) : add(whiteMoves,&move);
-					printf("ADDED %s", move);
+					//printf("ADDED %s", move);
 				//	printf("ooooooooo");
 				}
 				++j;
