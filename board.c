@@ -1,5 +1,4 @@
 //To do:
-//Checkmate check during each move's attempt
 //Pawn En Passant movement
 //Regex check must be added to parsed movements
 //Co-op playstyle implementation (Timer + Checkmate + Stalemate + Win/Lose/Draw + Replay)
@@ -28,6 +27,7 @@
 //getMoveSyntax redundancy must be checked! (Switch case redudancy unable to be reduced further)
 //Co-op playstyle barebones implementation (turns)
 //Error must be fixed in last two lines in next_move(), relating to freeing the allocated memory for the two strings (Can't free space !! --> ERROR : free(): invalid pointer)
+//Checkmate check during each move's attempt
 
 
 #include <stdio.h>
