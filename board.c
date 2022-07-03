@@ -28,6 +28,7 @@
 //Co-op playstyle barebones implementation (turns)
 //Error must be fixed in last two lines in next_move(), relating to freeing the allocated memory for the two strings (Can't free space !! --> ERROR : free(): invalid pointer)
 //Checkmate check during each move's attempt
+//Checkmate + Stalemate implemented
 
 
 #include <stdio.h>
@@ -75,9 +76,20 @@ int main(int argc, char* argv[argc+1]) {
 			,{"\u2656","\u2658","\u2657","\u2655","\u2654","\u2657","\u2658","\u2656"}
 			};
 
+	char board_t_two[8][8][4]={
+			{" "," "," "," "," "," "," ","\u2654"}
+			,{"\u265c"," ","\u265b"," "," "," "," "," "}
+			,{" "," "," "," "," "," ","\u265f"," "}
+			,{" "," "," "," "," "," "," "," "}
+			,{" "," "," "," "," "," "," "," "}
+			,{" "," "," "," "," "," "," "," "}
+			,{" "," "," "," "," "," "," "," "}
+			,{" "," "," "," "," "," "," "," "}
+			};
+
 	char board[8][8][4]={
 			{" "," "," "," "," "," "," ","\u2654"}
-			,{" "," ","\u265b"," "," "," "," "," "}
+			,{"\u265c"," ","\u265b"," "," "," "," "," "}
 			,{" "," "," "," "," "," ","\u265f"," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
@@ -89,18 +101,28 @@ int main(int argc, char* argv[argc+1]) {
 //Buffer size set to 7 (movements are in the following syntax [Axi Byj]
 	size_t buff_size=7;
 	char * current_move=(char *)malloc(sizeof(char)*buff_size);
+	char * previous_move=(char *)malloc(sizeof(char)*buff_size);
 	char color[2][6] = {"white", "black"};
 //i regulates players' turns:
 //0 signifies white's turn, while 1 signifies black's
 	short i = 0;
+	int moved_status = 0;
 
 //Main program loop
 	while(1) {
-		updateLegalMoves(board,whiteMoves,blackMoves);
-		//printf("Possible moves for black = %d, Possible moves for white = %d", blackMoves->size, whiteMoves->size);
-		printf("\n%s's turn previous move: %c%c%c %c %c%c%c \nnext move: ",color[i],*current_move,*(current_move+1),*(current_move+2),*(current_move+3),*(current_move+4),*(current_move+5),*(current_move+6));
 		current_board(board);
-		i = next_move(board,current_move, buff_size, i) ? (i+1)%2 : i;
+		printf("\nnext move: ");
+		moved_status = next_move(board,current_move, buff_size, i);
+		if(moved_status){
+			previous_move[0] = current_move[0];
+			previous_move[1] = current_move[1];
+			previous_move[2] = current_move[2];
+			previous_move[3] = current_move[3];
+			previous_move[4] = current_move[4];
+			previous_move[5] = current_move[5];
+			previous_move[6] = current_move[6];
+		}
+		i = moved_status ? (i+1)%2 : i;
 //Error must be fixed in last two lines in next_move(), relating to freeing the allocated memory for the two strings (Can't free space !! --> ERROR : free(): invalid pointer)
 		//randomNode(blackMoves,&n);
 		//printf("RANDOM BLACK NODE: '%s'", n->move);
@@ -108,6 +130,31 @@ int main(int argc, char* argv[argc+1]) {
 		clear(&whiteMoves->head);
 		//printf("clearing black list\n");
 		clear(&blackMoves->head);
+		updateLegalMoves(board,whiteMoves,blackMoves);
+		//printf("Possible moves for black = %d, Possible moves for white = %d", blackMoves->size, whiteMoves->size);
+
+		if(moved_status) {
+			if(!i)
+				if(checkMate(board, whiteMoves, i)) {
+					if(!(inCheck(board)+1))
+						printf("Stalemate !\n");
+					else
+						printf("Game Over ! Black Won with last move %c%c%c %c %c%c%c\n",*previous_move,*(previous_move+1),*(previous_move+2),*(previous_move+3),*(previous_move+4),*(previous_move+5),*(previous_move+6));
+					current_board(board);
+					break;
+				}
+			else{
+				if(checkMate(board, blackMoves, i)) {
+					if(!(inCheck(board)+1))
+						printf("Stalemate !\n");
+					else
+						printf("Game Over ! White Won with last move %c%c%c %c %c%c%c\n",*previous_move,*(previous_move+1),*(previous_move+2),*(previous_move+3),*(previous_move+4),*(previous_move+5),*(previous_move+6));
+					current_board(board);
+					break;
+				}
+			}
+		}
+		printf("\n%s's turn !\nprevious move: %c%c%c %c %c%c%c\n",color[i],*previous_move,*(previous_move+1),*(previous_move+2),*(previous_move+3),*(previous_move+4),*(previous_move+5),*(previous_move+6));
 	}
 	return 0;
 
@@ -159,8 +206,8 @@ int next_move(char board[8][8][4], char* move, size_t buff_size, short curr_play
 		strcpy(placement,piece);
 		strcpy(piece," ");
 		int inc = inCheck(board);
-		//printf("IN CHECK VALUE = %d\n",inc);
-		if(inc == curr_player) {
+		printf("IN CHECK VALUE = %d\n",inc);
+		if(inc != -1 && inc == curr_player) {
 			strcpy(piece,placement);
 			strcpy(placement," ");
 			printf("Illegal move !\n");
@@ -555,15 +602,17 @@ void getMoveSyntax(char board[8][8][4], int i, int j, char move[4]) {
 int inCheck(char board[8][8][4]) {
 	
 	unsigned i = 0;
-	unsigned whiteKingIndx = 0;
-	unsigned blackKingIndx = 0;
+	unsigned whiteKingIndx = -1;
+	unsigned blackKingIndx = -1;
+	int ret = -1;
+
 	while(i<64) {
-		if(!whiteKingIndx && !strcmp(board[i%8][i/8], "\u2654")) {
+		if(!(whiteKingIndx+1) && !strcmp(board[i%8][i/8], "\u2654")) {
 			//printf("found white king ! %d\n", i);
 			whiteKingIndx = i;
 		}
 
-		if(!blackKingIndx && !strcmp(board[i%8][i/8], "\u265a")) {
+		if(!(blackKingIndx+1) && !strcmp(board[i%8][i/8], "\u265a")) {
 			blackKingIndx = i;
 			//printf("found black king ! %d\n", i);
 		}
@@ -582,32 +631,27 @@ int inCheck(char board[8][8][4]) {
 	//printf("WHITE KING INDEX %d\n",whiteKingIndx);
 	//printf("BLACK KING INDEX %d\n",blackKingIndx);
 
-	while(wHead->next || bHead->next){
+	while(bHead){
 		//printf("one turn\n");
 		//printf("WHITE %s %d and %d, %d and %d\n",bHead->move, bHead->move[5]-'a', whiteKingIndx/8, bHead->move[6]-'1', whiteKingIndx%8);
-		if(((bHead->move[5]-'a')==(whiteKingIndx/8)) && ((bHead->move[6]-'1')==(whiteKingIndx%8))) {
-			clear(&whiteMoves->head);
-			clear(&blackMoves->head);
-			free(whiteMoves);
-			free(blackMoves);
-
-			return 0;
+		if(whiteKingIndx != -1 && ((bHead->move[5]-'a')==(whiteKingIndx/8)) && ((bHead->move[6]-'1')==(whiteKingIndx%8))){
+			ret += 1;
+			break;
 		}
 
-		//printf("BLACK %s %d and %d, %d and %d\n",wHead->move, wHead->move[5]-'a', blackKingIndx/8, wHead->move[6]-'1', blackKingIndx%8);
-		if(((wHead->move[5]-'a')==(blackKingIndx/8)) && ((wHead->move[6]-'1')==(blackKingIndx%8))) {
-			clear(&whiteMoves->head);
-			clear(&blackMoves->head);
-			free(whiteMoves);
-			free(blackMoves);
-
-			return 1;
-		}
-
-		if(wHead->next)
-			wHead = wHead->next;
-		if(bHead->next)
+		if(bHead)
 			bHead = bHead->next;
+	}
+
+	while(wHead){
+		//printf("BLACK %s %d and %d, %d and %d\n",wHead->move, wHead->move[5]-'a', blackKingIndx/8, wHead->move[6]-'1', blackKingIndx%8);
+		if(blackKingIndx != -1 && ((wHead->move[5]-'a')==(blackKingIndx/8)) && ((wHead->move[6]-'1')==(blackKingIndx%8))){
+			ret += 2;
+			break;
+		}
+
+		if(wHead)
+			wHead = wHead->next;
 	}
 
 	clear(&whiteMoves->head);
@@ -615,5 +659,55 @@ int inCheck(char board[8][8][4]) {
 	free(whiteMoves);
 	free(blackMoves);
 
-	return -1;
+	return ret;
+}
+
+int checkMate(char board[8][8][4], LinkedList * Moves, int curr_player) {
+
+	char board_temp[8][8][4]={
+			{" "," "," "," "," "," "," "," "}
+			,{" "," "," "," "," "," "," "," "}
+			,{" "," "," "," "," "," "," "," "}
+			,{" "," "," "," "," "," "," "," "}
+			,{" "," "," "," "," "," "," "," "}
+			,{" "," "," "," "," "," "," "," "}
+			,{" "," "," "," "," "," "," "," "}
+			,{" "," "," "," "," "," "," "," "}
+			};
+	char * move_1 = malloc(sizeof(*move_1) * 4);
+	char * move_2 = malloc(sizeof(*move_2) * 4);
+	char delim[]=" ";
+	char * piece;
+	char * placement;
+	int inc = -1;
+
+	while(Moves->head->next){
+
+		move_1=strtok(Moves->head->move,delim);
+		move_2=strtok(NULL,delim);
+
+		if(check_move(board, move_1, move_2, &piece, &placement) && ((((board[move_1[2]-'1'][move_1[1]-'a'][2]-0x94)&0xFF)/6)^!curr_player) ) {
+
+//We store the previous version of the board in order to avoid accidently removing pieces during checkmate check by the double string copy operation below
+			memcpy(board_temp,board,sizeof(char)*(8*8*4));
+			current_board(board_temp);
+			strcpy(placement,piece);
+			strcpy(piece," ");
+			inc = inCheck(board);
+
+//We restore the previous board state
+			memcpy(board,board_temp,sizeof(char)*(8*8*4));
+			current_board(board);
+		}
+
+		if(inc != curr_player && inc < 2) {
+			return 0;
+		}
+
+		if(Moves->head->next)
+			Moves->head = Moves->head->next;
+	}
+
+	return 1;
+
 }
