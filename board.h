@@ -22,5 +22,6 @@ void randomNode(LinkedList * l, Node ** n);
 void clear(Node ** head);
 void updateLegalMoves(char board[8][8][4], LinkedList * whiteMoves, LinkedList * blackMoves);
 void getMoveSyntax(char board[8][8][4], int i, int j, char move[4]);
+int inCheck(char board[8][8][4]);
 
 #endif

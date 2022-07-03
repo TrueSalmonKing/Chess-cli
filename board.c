@@ -75,21 +75,23 @@ int main(int argc, char* argv[argc+1]) {
 			,{"\u2656","\u2658","\u2657","\u2655","\u2654","\u2657","\u2658","\u2656"}
 			};
 
-	char board_temp[8][8][4]={
-			{"\u265c","\u265e","\u265d","\u265b","\u265a","\u265d","\u265e","\u265c"}
+	char board_t[8][8][4]={
+			{" "," "," "," "," "," "," ","\u2654"}
+			,{" "," ","\u265b"," "," "," "," "," "}
+			,{" "," "," "," "," "," ","\u265f"," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
-			,{" "," "," ","\u265a"," "," "," "," "}
-			,{"\u2656","\u2658","\u2657","\u2655","\u2654","\u2657","\u2658","\u2656"}
 			};
 
 //Buffer size set to 7 (movements are in the following syntax [Axi Byj]
 	size_t buff_size=7;
 	char * current_move=(char *)malloc(sizeof(char)*buff_size);
 	char color[2][6] = {"white", "black"};
+//i regulates players' turns:
+//0 signifies white's turn, while 1 signifies black's
 	short i = 0;
 
 //Main program loop
@@ -99,6 +101,7 @@ int main(int argc, char* argv[argc+1]) {
 		printf("\n%s's turn previous move: %c%c%c %c %c%c%c \nnext move: ",color[i],*current_move,*(current_move+1),*(current_move+2),*(current_move+3),*(current_move+4),*(current_move+5),*(current_move+6));
 		current_board(board);
 		i = next_move(board,current_move, buff_size, i) ? (i+1)%2 : i;
+//Error must be fixed in last two lines in next_move(), relating to freeing the allocated memory for the two strings (Can't free space !! --> ERROR : free(): invalid pointer)
 		randomNode(blackMoves,&n);
 		printf("RANDOM BLACK NODE: '%s'", n->move);
 		printf("clearing white list\n");
@@ -149,11 +152,20 @@ int next_move(char board[8][8][4], char* move, size_t buff_size, short curr_play
 		return 0;
 	}
 //If the user's input is indeed valid we invoke the function check_move
-//We also verify that the current moving piece indeed has the turn to move by a simple xor of the last byte of the chess piece's unicode representation (it ranges from 0x93 to 0x
-	if(check_move(board, move_1, move_2, &piece, &placement) && ((((board[move_1[2]-'1'][move_1[1]-'a'][2]-0x94)&0xFF)/6)^curr_player) ) {
+//We also verify that the current moving piece indeed has the turn to move by a simple xor with the inverse of the last byte of the chess piece's unicode representation (it ranges from 0x94 to 0x99 for white pieces, and 0x9A to 0x9F for black pieces)
+	printf("curr player = %x while %x\n", curr_player, (((board[move_1[2]-'1'][move_1[1]-'a'][2]-0x94)&0xFF)/6));
+	if(check_move(board, move_1, move_2, &piece, &placement) && ((((board[move_1[2]-'1'][move_1[1]-'a'][2]-0x94)&0xFF)/6)^!curr_player) ) {
 		printf("Valid move !\n");
 		strcpy(placement,piece);
 		strcpy(piece," ");
+		int inc = inCheck(board);
+		printf("IN CHECK VALUE = %d\n",inc);
+		//if(curr_player) {
+		//	strcpy(piece,placement);
+		//	strcpy(placement," ");
+		//	printf("Illegal move !\n");
+		//}
+		
 		pawn_promotion(board, (move_2[2]-'1') + (move_2[1]-'a')*8);
 		return 1;
 	} else
@@ -521,4 +533,74 @@ void getMoveSyntax(char board[8][8][4], int i, int j, char move[4]) {
 		move[1] = i + 'a';
 		move[2] = j + '1';
 	}
+}
+
+//Function that checks for checkmates for both black and white side:
+//0 is returned back in the case where black king is in check
+//1 is returned back in the case where white king is in check
+//\u2654 -> white K
+//\u265a -> black K
+int inCheck(char board[8][8][4]) {
+	
+	int i = 0;
+	int whiteKingIndx = 0;
+	int blackKingIndx = 0;
+	while(i<64) {
+		if(!whiteKingIndx && !strcmp(board[i%8][i/8], "\u2654")) {
+			printf("found white king ! %d\n", i);
+			whiteKingIndx = i;
+		}
+
+		if(!blackKingIndx && !strcmp(board[i%8][i/8], "\u265a")) {
+			blackKingIndx = i;
+			printf("found black king ! %d\n", i);
+		}
+
+		++i;
+	}
+
+	LinkedList * whiteMoves = malloc(sizeof(*whiteMoves));
+	LinkedList * blackMoves = malloc(sizeof(*blackMoves));
+
+	updateLegalMoves(board, whiteMoves, blackMoves);
+		
+	Node * wHead = whiteMoves->head;
+	Node * bHead = blackMoves->head;
+
+	printf("WHITE KING INDEX %d\n",whiteKingIndx);
+	printf("BLACK KING INDEX %d\n",blackKingIndx);
+
+	while(wHead || bHead){
+		if(((wHead->move[5]-'a') & (whiteKingIndx/8)) && ((wHead->move[6]-'1') & (whiteKingIndx%8))) {
+			printf("WHITE %d and %x, %x and %x\n", (wHead->move[5]-'a', (whiteKingIndx/8)), (wHead->move[6]-'1'), (whiteKingIndx%8));
+			clear(&whiteMoves->head);
+			clear(&blackMoves->head);
+			free(whiteMoves);
+			free(blackMoves);
+
+			return 0;
+		}
+
+		if(((bHead->move[5]-'a') & (blackKingIndx/8)) && ((bHead->move[6]-'1') & (blackKingIndx%8))) {
+			printf("BLACK %d and %d, %d and %d\n", (bHead->move[5]-'a', (blackKingIndx/8)), (bHead->move[6]-'1'), (blackKingIndx%8));
+			clear(&whiteMoves->head);
+			clear(&blackMoves->head);
+			free(whiteMoves);
+			free(blackMoves);
+
+			return 1;
+		}
+
+		if(wHead)
+			wHead = wHead->next;
+		if(bHead)
+			bHead = bHead->next;
+	}
+
+	clear(&whiteMoves->head);
+	clear(&blackMoves->head);
+	free(whiteMoves);
+	free(blackMoves);
+
+	return -1;
 }
