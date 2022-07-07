@@ -594,11 +594,9 @@ void getMoveSyntax(char board[8][8][4], int i, int j, char move[4]) {
 	}
 }
 
-//Function that checks for checkmates for both black and white side:
+//Function that looks for checks for both black and white side:
 //0 is returned back in the case where black king is in check
 //1 is returned back in the case where white king is in check
-//\u2654 -> white K
-//\u265a -> black K
 int inCheck(char board[8][8][4]) {
 	
 	unsigned i = 0;
@@ -606,6 +604,7 @@ int inCheck(char board[8][8][4]) {
 	unsigned blackKingIndx = -1;
 	int ret = -1;
 
+//We loop over the entire board to find both kings
 	while(i<64) {
 		if(!(whiteKingIndx+1) && !strcmp(board[i%8][i/8], "\u2654")) {
 			//printf("found white king ! %d\n", i);
@@ -613,8 +612,8 @@ int inCheck(char board[8][8][4]) {
 		}
 
 		if(!(blackKingIndx+1) && !strcmp(board[i%8][i/8], "\u265a")) {
-			blackKingIndx = i;
 			//printf("found black king ! %d\n", i);
+			blackKingIndx = i;
 		}
 
 		++i;
@@ -623,17 +622,15 @@ int inCheck(char board[8][8][4]) {
 	LinkedList * whiteMoves = malloc(sizeof(*whiteMoves));
 	LinkedList * blackMoves = malloc(sizeof(*blackMoves));
 
+//We get all possible moves for both players
 	updateLegalMoves(board, whiteMoves, blackMoves);
 		
 	Node * wHead = whiteMoves->head;
 	Node * bHead = blackMoves->head;
 
-	//printf("WHITE KING INDEX %d\n",whiteKingIndx);
-	//printf("BLACK KING INDEX %d\n",blackKingIndx);
 
 	while(bHead){
-		//printf("one turn\n");
-		//printf("WHITE %s %d and %d, %d and %d\n",bHead->move, bHead->move[5]-'a', whiteKingIndx/8, bHead->move[6]-'1', whiteKingIndx%8);
+//If a move from a black piece results in it landing in the white king's position, effectively capturing it, we return 0 (-1 + 1) to signify that white is in check
 		if(whiteKingIndx != -1 && ((bHead->move[5]-'a')==(whiteKingIndx/8)) && ((bHead->move[6]-'1')==(whiteKingIndx%8))){
 			ret += 1;
 			break;
@@ -644,7 +641,7 @@ int inCheck(char board[8][8][4]) {
 	}
 
 	while(wHead){
-		//printf("BLACK %s %d and %d, %d and %d\n",wHead->move, wHead->move[5]-'a', blackKingIndx/8, wHead->move[6]-'1', blackKingIndx%8);
+//If a move from a white piece results in it landing in the black king's position, effectively capturing it, we return 1 (-1 + 2) to signify that black is in check
 		if(blackKingIndx != -1 && ((wHead->move[5]-'a')==(blackKingIndx/8)) && ((wHead->move[6]-'1')==(blackKingIndx%8))){
 			ret += 2;
 			break;
@@ -659,11 +656,16 @@ int inCheck(char board[8][8][4]) {
 	free(whiteMoves);
 	free(blackMoves);
 
+//Even though it is impossible for both sides to be in check at the same time, we account for this by returning 2 in the case where this occurs as (-1 + 1 +2)
 	return ret;
 }
 
+//Function that checks whether the current side is in checkmate for both black and white side:
+//Is in the case where the current player is white, and black just played before it a move that placed white's king in checkmate, 1 is returned, if it simple check or the king is not in check at all, then 0 is returned. The same values are returned in the case of the current player being black
 int checkMate(char board[8][8][4], LinkedList * Moves, int curr_player) {
 
+
+//We initialize an empty chess board
 	char board_temp[8][8][4]={
 			{" "," "," "," "," "," "," "," "}
 			,{" "," "," "," "," "," "," "," "}
@@ -681,25 +683,25 @@ int checkMate(char board[8][8][4], LinkedList * Moves, int curr_player) {
 	char * placement;
 	int inc = -1;
 
+//We iterate through all possible moves in current player's possible moves' list
 	while(Moves->head->next){
 
 		move_1=strtok(Moves->head->move,delim);
 		move_2=strtok(NULL,delim);
 
-		if(check_move(board, move_1, move_2, &piece, &placement) && ((((board[move_1[2]-'1'][move_1[1]-'a'][2]-0x94)&0xFF)/6)^!curr_player) ) {
-
 //We store the previous version of the board in order to avoid accidently removing pieces during checkmate check by the double string copy operation below
-			memcpy(board_temp,board,sizeof(char)*(8*8*4));
-			current_board(board_temp);
-			strcpy(placement,piece);
-			strcpy(piece," ");
-			inc = inCheck(board);
+		memcpy(board_temp,board,sizeof(char)*(8*8*4));
+		current_board(board_temp);
+		strcpy(placement,piece);
+		strcpy(piece," ");
+//We store the value of inCheck to confirm whether white or black are in check
+		inc = inCheck(board);
 
 //We restore the previous board state
-			memcpy(board,board_temp,sizeof(char)*(8*8*4));
-			current_board(board);
-		}
+		memcpy(board,board_temp,sizeof(char)*(8*8*4));
+		current_board(board);
 
+//In the case where a possible move for the current player results in either the player that is in check isn't the same as the current player, if the player isn't in check or if somehow both players are in check (impossible under normal circumstances) we exit the function
 		if(inc != curr_player && inc < 2) {
 			return 0;
 		}
@@ -708,6 +710,7 @@ int checkMate(char board[8][8][4], LinkedList * Moves, int curr_player) {
 			Moves->head = Moves->head->next;
 	}
 
+//If all possible moves from the current player result in a check, then we return 1 signifying that the current player is indeed in check
 	return 1;
 
 }
