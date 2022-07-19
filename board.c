@@ -335,7 +335,7 @@ int check_move(char board[8][8][4], char* curr_place, char* move, char ** piece,
 //King chess piece
 //Allows for movement in any placement with one displacement in each axis
 		case 'K':
-			if((!strcmp(board[cpy][cpx],"\u265a") || !strcmp(board[cpy][cpx],"\u2654")) && (!((mx)>>3)&&!((my)>>3)) && (!(((a+(a>>31))^(a>>31))>>1)&&!(((b+(b>>31))^(b>>31))>>1)) && colli_handl(board[cpy][cpx],board[my][mx])) {
+			if(((!strcmp(board[cpy][cpx],"\u265a")^!strcmp(board[my][mx],"\u2654")) || (!strcmp(board[cpy][cpx],"\u2654")^!strcmp(board[my][mx],"\u265a"))) && (!((mx)>>3)&&!((my)>>3)) && (!(((a+(a>>31))^(a>>31))>>1)&&!(((b+(b>>31))^(b>>31))>>1)) && colli_handl(board[cpy][cpx],board[my][mx])) {
 				return 1;
 				
 			};
