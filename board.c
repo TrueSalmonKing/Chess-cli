@@ -1,4 +1,5 @@
 //To do:
+//King capturing king move should be illegal !
 //Pawn En Passant movement
 //Regex check must be added to parsed movements
 //Co-op playstyle implementation (Timer + Checkmate + Stalemate + Win/Lose/Draw + Replay)
