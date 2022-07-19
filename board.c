@@ -1,5 +1,4 @@
 //To do:
-//King capturing king move should be illegal !
 //Pawn En Passant movement
 //Regex check must be added to parsed movements
 //Co-op playstyle implementation (Timer + Checkmate + Stalemate + Win/Lose/Draw + Replay)
@@ -30,6 +29,7 @@
 //Error must be fixed in last two lines in next_move(), relating to freeing the allocated memory for the two strings (Can't free space !! --> ERROR : free(): invalid pointer)
 //Checkmate check during each move's attempt
 //Checkmate + Stalemate implemented
+//King capturing king move should be illegal !
 
 
 #include <stdio.h>
@@ -333,7 +333,8 @@ int check_move(char board[8][8][4], char* curr_place, char* move, char ** piece,
 			};
 			return 0;
 //King chess piece
-//Allows for movement in any placement with one displacement in each axis
+//Allows for movement in any placement with one or less displacement in each axis
+//King capturing king is not possible, using the XOR operations (!strcmp(board[cpy][cpx],"\u265a")^!strcmp(board[my][mx],"\u2654")) and (!strcmp(board[cpy][cpx],"\u2654")^!strcmp(board[my][mx],"\u265a"))
 		case 'K':
 			if(((!strcmp(board[cpy][cpx],"\u265a")^!strcmp(board[my][mx],"\u2654")) || (!strcmp(board[cpy][cpx],"\u2654")^!strcmp(board[my][mx],"\u265a"))) && (!((mx)>>3)&&!((my)>>3)) && (!(((a+(a>>31))^(a>>31))>>1)&&!(((b+(b>>31))^(b>>31))>>1)) && colli_handl(board[cpy][cpx],board[my][mx])) {
 				return 1;
